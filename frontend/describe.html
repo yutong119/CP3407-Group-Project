@@ -216,7 +216,7 @@
 <body>
 
 <nav>
-  <a class="nav-brand" href="1_landing.html">
+  <a class="nav-brand" href="index.html">
     <div class="shield">🛡</div>
     SafeStay
   </a>
@@ -279,13 +279,46 @@
     <span id="location-text">Use current location</span>
   </div>
 
-  <button class="btn-submit" onclick="location.href='result.html'">
+  <div class="form-error" id="submit-error" style="display:none;color:#DC2626;font-size:13px;margin-top:12px;"></div>
+
+  <button class="btn-submit" id="submit-btn" onclick="handleSubmitCase()">
     Next: Provide Details →
   </button>
 
 </div>
 
+<script src="api.js"></script>
 <script>
+  let selectedCategoryId = null;
+
+  // Pull the real category list from the backend and match it against the
+  // case_type the user clicked on the home page (e.g. describe.html?case_type=Theft)
+  async function loadCategories() {
+    try {
+      const response = await safeStayAPI.getCategories();
+      const categories = response.categories || response; // tolerate either response shape
+      const params = new URLSearchParams(window.location.search);
+      const caseType = params.get('case_type');
+
+      let matched = null;
+      if (caseType && Array.isArray(categories)) {
+        matched = categories.find(
+          c => c.category_name && c.category_name.toLowerCase() === caseType.toLowerCase()
+        );
+      }
+      if (matched) {
+        selectedCategoryId = matched.category_id;
+      } else if (Array.isArray(categories) && categories.length > 0) {
+        selectedCategoryId = categories[0].category_id; // fallback default
+      }
+    } catch (err) {
+      console.error('Failed to load case categories:', err);
+      // Leave selectedCategoryId as null; createCase below will still run,
+      // but the backend may need to allow a null/uncategorized case.
+    }
+  }
+  document.addEventListener('DOMContentLoaded', loadCategories);
+
   function updateCount(el) {
     document.getElementById('char-count').textContent = el.value.length + '/2000';
   }
@@ -303,11 +336,73 @@
     text.textContent = 'Detecting location...';
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        () => { text.textContent = '✅ Location detected'; },
+        (pos) => {
+          text.textContent = '✅ Location detected';
+          text.dataset.lat = pos.coords.latitude;
+          text.dataset.lng = pos.coords.longitude;
+        },
         () => { text.textContent = 'Could not detect location'; }
       );
     } else {
       text.textContent = 'Geolocation not supported';
+    }
+  }
+
+  // ===== SUBMIT CASE =====
+  async function handleSubmitCase() {
+    const description = document.getElementById('situation-input').value.trim();
+    const errorEl      = document.getElementById('submit-error');
+    const btn          = document.getElementById('submit-btn');
+
+    errorEl.style.display = 'none';
+
+    if (!description) {
+      errorEl.textContent = 'Please describe your situation before continuing.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    if (!safeStayAPI.token) {
+      // Case creation requires an authenticated user
+      location.href = 'login.html';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    try {
+      const locationText = document.getElementById('location-text').textContent;
+      const caseTitle = description.length > 60 ? description.slice(0, 60) + '...' : description;
+
+      // urgency_level / detected_case / probability are left null here —
+      // they're expected to come back from the backend's AI classification step.
+      const created = await safeStayAPI.createCase(
+        selectedCategoryId,
+        caseTitle,
+        description,
+        locationText,
+        null,
+        null,
+        null
+      );
+
+      const caseId = created.case_id || created.id || (created.case && created.case.case_id);
+
+      const fileInput = document.getElementById('file-input');
+      if (fileInput.files.length > 0 && caseId) {
+        for (const file of Array.from(fileInput.files)) {
+          await safeStayAPI.uploadEvidence(caseId, file);
+        }
+      }
+
+      location.href = caseId ? `result.html?case_id=${caseId}` : 'result.html';
+    } catch (err) {
+      errorEl.textContent = err.message || 'Something went wrong submitting your case. Please try again.';
+      errorEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Next: Provide Details →';
     }
   }
 </script>
