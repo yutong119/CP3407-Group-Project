@@ -1,0 +1,172 @@
+// SafeStay Frontend API Service
+// This file handles all API calls to the backend
+
+const API_BASE_URL = 'http://localhost:5001/api';
+
+class SafeStayAPI {
+  constructor() {
+    this.token = localStorage.getItem('token') || null;
+  }
+
+  // Set token after login
+  setToken(token) {
+    this.token = token;
+    localStorage.setItem('token', token);
+  }
+
+  // Clear token on logout
+  clearToken() {
+    this.token = null;
+    localStorage.removeItem('token');
+  }
+
+  // Helper method for API calls
+  async request(endpoint, method = 'GET', body = null) {
+    const options = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    };
+
+    if (this.token) {
+      options.headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'API Error');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('API Error:', error);
+      throw error;
+    }
+  }
+
+  // ===== AUTH ENDPOINTS =====
+  async register(email, password, fullName, preferredLanguage = 'English') {
+    return this.request('/auth/register', 'POST', {
+      email,
+      password,
+      full_name: fullName,
+      preferred_language: preferredLanguage
+    });
+  }
+
+  async login(email, password) {
+    const data = await this.request('/auth/login', 'POST', { email, password });
+    if (data.token) {
+      this.setToken(data.token);
+    }
+    return data;
+  }
+
+  // ===== USER ENDPOINTS =====
+  async getUserProfile() {
+    return this.request('/users/profile');
+  }
+
+  async updateProfile(fullName, preferredLanguage) {
+    return this.request('/users/profile', 'PUT', {
+      full_name: fullName,
+      preferred_language: preferredLanguage
+    });
+  }
+
+  async changePassword(oldPassword, newPassword) {
+    return this.request('/users/change-password', 'POST', {
+      old_password: oldPassword,
+      new_password: newPassword
+    });
+  }
+
+  // ===== CASE ENDPOINTS =====
+  async getAllCases() {
+    return this.request('/cases');
+  }
+
+  async getCase(caseId) {
+    return this.request(`/cases/${caseId}`);
+  }
+
+  async createCase(categoryId, caseTitle, description, location, urgencyLevel, detectedCase, probability) {
+    return this.request('/cases', 'POST', {
+      category_id: categoryId,
+      case_title: caseTitle,
+      description,
+      location,
+      urgency_level: urgencyLevel,
+      detected_case: detectedCase,
+      probability
+    });
+  }
+
+  async updateCase(caseId, caseStatus, urgencyLevel, detectedCase, probability) {
+    return this.request(`/cases/${caseId}`, 'PUT', {
+      case_status: caseStatus,
+      urgency_level: urgencyLevel,
+      detected_case: detectedCase,
+      probability
+    });
+  }
+
+  async deleteCase(caseId) {
+    return this.request(`/cases/${caseId}`, 'DELETE');
+  }
+
+  // ===== EVIDENCE ENDPOINTS =====
+  async uploadEvidence(caseId, file, description = '') {
+    const formData = new FormData();
+    formData.append('case_id', caseId);
+    formData.append('file', file);
+    formData.append('description', description);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/evidence`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Upload failed');
+      }
+      return data;
+    } catch (error) {
+      console.error('Upload Error:', error);
+      throw error;
+    }
+  }
+
+  async getEvidenceFiles(caseId) {
+    return this.request(`/evidence/case/${caseId}`);
+  }
+
+  async deleteEvidence(evidenceId) {
+    return this.request(`/evidence/${evidenceId}`, 'DELETE');
+  }
+
+  // ===== CATEGORY ENDPOINTS =====
+  async getCategories() {
+    return this.request('/categories');
+  }
+
+  async getCategory(categoryId) {
+    return this.request(`/categories/${categoryId}`);
+  }
+}
+
+// Create global instance
+const safeStayAPI = new SafeStayAPI();
