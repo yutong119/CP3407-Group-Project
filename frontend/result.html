@@ -222,7 +222,7 @@
 <body>
 
 <nav>
-  <a class="nav-brand" href="1_landing.html">
+  <a class="nav-brand" href="index.html">
     <div class="shield">🛡</div>
     SafeStay
   </a>
@@ -239,19 +239,19 @@
   <div class="detected-card">
     <div>
       <div class="detected-label">Detected Case</div>
-      <div class="detected-type">Theft</div>
-      <div class="detected-prob">Probability: 92%</div>
+      <div class="detected-type" id="detected-type">Theft</div>
+      <div class="detected-prob" id="detected-prob">Probability: 92%</div>
     </div>
     <div class="detected-icon">🛍️</div>
   </div>
 
   <!-- Urgency Level -->
-  <div class="urgency-card high">
+  <div class="urgency-card high" id="urgency-card">
     <div class="urgency-icon">🚨</div>
     <div>
       <div class="urgency-title">Urgency Level</div>
-      <span class="urgency-badge high">⚠ High</span>
-      <p class="urgency-desc">This situation requires immediate attention. Please act on the steps below as soon as possible.</p>
+      <span class="urgency-badge high" id="urgency-badge">⚠ High</span>
+      <p class="urgency-desc" id="urgency-desc">This situation requires immediate attention. Please act on the steps below as soon as possible.</p>
     </div>
   </div>
 
@@ -282,13 +282,65 @@
 
   <!-- CTA Buttons -->
   <div class="result-btns">
-    <button class="btn-result outline">📋 View Checklist</button>
-    <button class="btn-result primary">📞 View Contacts</button>
+    <button class="btn-result outline" id="checklist-btn">📋 View Checklist</button>
+    <button class="btn-result primary" id="contacts-btn">📞 View Contacts</button>
   </div>
 
   <a class="btn-back" href="index.html">← Back to Home</a>
 
 </div>
+
+<script src="api.js"></script>
+<script>
+  // api.js doesn't expose checklist/contacts endpoints yet, so these stay
+  // as placeholders until that backend work lands.
+  document.getElementById('checklist-btn').addEventListener('click', () => {
+    alert('Checklist view is coming soon.');
+  });
+  document.getElementById('contacts-btn').addEventListener('click', () => {
+    alert('Contacts view is coming soon.');
+  });
+
+  async function loadCaseResult() {
+    const params = new URLSearchParams(window.location.search);
+    const caseId = params.get('case_id');
+    if (!caseId) return; // no case_id in the URL — keep the static placeholder content
+
+    try {
+      const response = await safeStayAPI.getCase(caseId);
+      const caseData = response.case || response; // tolerate either response shape
+
+      if (caseData.detected_case) {
+        document.getElementById('detected-type').textContent = caseData.detected_case;
+      }
+      if (caseData.probability != null) {
+        document.getElementById('detected-prob').textContent = `Probability: ${caseData.probability}%`;
+      }
+
+      const urgency = (caseData.urgency_level || 'medium').toLowerCase();
+      const card  = document.getElementById('urgency-card');
+      const badge = document.getElementById('urgency-badge');
+      const desc  = document.getElementById('urgency-desc');
+
+      card.className  = `urgency-card ${urgency}`;
+      badge.className = `urgency-badge ${urgency}`;
+
+      if (urgency === 'high') {
+        badge.textContent = '⚠ High';
+        desc.textContent  = 'This situation requires immediate attention. Please act on the steps below as soon as possible.';
+      } else if (urgency === 'low') {
+        badge.textContent = '✓ Low';
+        desc.textContent  = 'This situation is not urgent, but it\u2019s still worth following the steps below.';
+      } else {
+        badge.textContent = '⚠ Medium';
+        desc.textContent  = 'This situation should be addressed soon. Review the recommended steps below.';
+      }
+    } catch (err) {
+      console.error('Failed to load case result:', err);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', loadCaseResult);
+</script>
 
 </body>
 </html>
