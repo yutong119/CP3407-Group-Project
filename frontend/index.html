@@ -231,14 +231,15 @@
 <body>
 
 <nav>
+  <a class="nav-brand" href="index.html"></a>
   <div class="nav-brand">
     <div class="shield">🛡</div>
     SafeStay
   </div>
   <div class="nav-right">
     <div class="nav-lang">🌐 English ▾</div>
-    <button class="btn-nav outline" onclick="location.href='login.html'">Log in</button>
-    <button class="btn-nav primary" onclick="location.href='login.html'">Register</button>
+    <button class="btn-nav outline" id="nav-login-btn" onclick="location.href='login.html'">Log in</button>
+    <button class="btn-nav primary" id="nav-register-btn" onclick="location.href='login.html'">Register</button>
   </div>
 </nav>
 
@@ -279,27 +280,27 @@
     <a href="#">View all cases →</a>
   </div>
   <div class="cases-grid">
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Theft">
       <div class="case-icon" style="background:#EFF6FF">🛍️</div>
       <span>Theft</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Lost%20Passport">
       <div class="case-icon" style="background:#FEF2F2">🛂</div>
       <span>Lost Passport</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Scam">
       <div class="case-icon" style="background:#FFFBEB">💻</div>
       <span>Scam</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Rental%20Dispute">
       <div class="case-icon" style="background:#F0FDF4">🏠</div>
       <span>Rental Dispute</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Medical%20Emergency">
       <div class="case-icon" style="background:#FFF1F2">🏥</div>
       <span>Medical Emergency</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Other">
       <div class="case-icon" style="background:#F9FAFB">•••</div>
       <span>Other</span>
     </a>
@@ -307,6 +308,26 @@
 </div>
 
 <p class="footer-note">We support international students. You are not alone.</p>
+
+<script src="api.js"></script>
+<script>
+  // If the user already has a session, swap "Log in / Register" for account actions
+  document.addEventListener('DOMContentLoaded', () => {
+    if (safeStayAPI.token) {
+      const loginBtn    = document.getElementById('nav-login-btn');
+      const registerBtn = document.getElementById('nav-register-btn');
+
+      loginBtn.textContent = 'Log out';
+      loginBtn.onclick = () => {
+        safeStayAPI.clearToken();
+        location.reload();
+      };
+
+      registerBtn.textContent = 'Describe a Case';
+      registerBtn.onclick = () => location.href = 'describe.html';
+    }
+  });
+</script>
 
 </body>
 </html>
