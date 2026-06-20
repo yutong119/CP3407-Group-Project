@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emergency Contacts – SafeStay</title>
+  <script src="../api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+    .badge-high {
+      margin-left: auto;
+      background: #E02424; color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: #fff;
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #111827; }
+    .page-sub   { font-size: 13px; color: #6B7280; margin-top: 4px; }
+
+    /* ── AI Banner ── */
+    .ai-banner {
+      margin: 16px 16px 0;
+      background: #FDF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .ai-banner-icon { font-size: 20px; flex-shrink: 0; }
+    .ai-banner-label {
+      font-size: 13px; font-weight: 700;
+      color: #E02424; margin-bottom: 4px;
+    }
+    .ai-banner-text { font-size: 13px; color: #991B1B; line-height: 1.5; }
+    .ai-banner-loading { font-size: 13px; color: #6B7280; }
+
+    /* ── Contact list ── */
+    .contact-list { padding: 16px 16px 0; }
+
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .contact-icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+
+    .contact-name   { font-size: 15px; font-weight: 600; color: #111827; }
+    .contact-number { font-size: 13px; color: #6B7280; margin-top: 2px; }
+
+    .btn-call {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-call.success { background: #057A55 !important; }
+
+    /* ── Map button ── */
+    .map-wrap { margin: 4px 16px 0; }
+    .btn-map {
+      width: 100%; padding: 14px;
+      background: #fff;
+      border: 1px solid #1A56DB;
+      border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      color: #1A56DB; cursor: pointer;
+      display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+
+    /* ── Recommended Actions ── */
+    .actions-box {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .actions-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 12px; }
+
+    .action-row {
+      display: flex; gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .action-row:last-child { margin-bottom: 0; }
+
+    .action-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #1A56DB; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .action-text { font-size: 14px; color: #111827; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <div class="appbar-icon">🛡️</div>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub" id="case-subtitle">Loading…</div>
+    </div>
+    <div class="badge-high" id="urgency-badge">HIGH</div>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-title">Recommended Contacts</div>
+    <div class="page-sub">Based on your situation and location</div>
+  </div>
+
+  <!-- AI Priority Banner -->
+  <div class="ai-banner">
+    <div class="ai-banner-icon">🚨</div>
+    <div>
+      <div class="ai-banner-label" id="banner-label">Urgency: High — AI Recommendation</div>
+      <div class="ai-banner-loading" id="banner-loading">Analysing your situation…</div>
+      <div class="ai-banner-text" id="banner-text" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Contact list -->
+  <div class="contact-list" id="contact-list"></div>
+
+  <!-- Map -->
+  <div class="map-wrap">
+    <button class="btn-map" onclick="openMap()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="#1A56DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      View on Map
+    </button>
+  </div>
+
+  <!-- Recommended Actions -->
+  <div class="actions-box">
+    <div class="actions-title">Recommended Actions</div>
+    <div class="action-row"><div class="action-num">1</div><div class="action-text">Contact the police immediately</div></div>
+    <div class="action-row"><div class="action-num">2</div><div class="action-text">Block your bank cards and accounts</div></div>
+    <div class="action-row"><div class="action-num">3</div><div class="action-text">Gather all possible evidence</div></div>
+    <div class="action-row"><div class="action-num">4</div><div class="action-text">Check CCTV around the area</div></div>
+    <div class="action-row"><div class="action-num">5</div><div class="action-text">Report to your university (if needed)</div></div>
+  </div>
+
+</div>
+
+<script>
+  // ── Config ────────────────────────────────────────────────────────────────
+  const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+
+  // Case context – replace with real values from your router/session
+  const CASE_ID   = 'THF-2024-00023';
+  const CASE_TYPE = 'Theft';
+  const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
+  const CASE_LOC  = 'University Library, Singapore';
+  const URGENCY   = 'High';
+
+  // ── Contacts data ─────────────────────────────────────────────────────────
+  const CONTACTS = [
+    { id: 1, name: 'Police (Emergency)',  number: '999',             icon: '🚔', color: '#1A56DB' },
+    { id: 2, name: 'University Support',  number: '+65 6516 1177', icon: '🏫', color: '#057A55' },
+    { id: 3, name: 'Singapore Embassy',   number: '+65 6235 4555',   icon: '🏛️', color: '#C27803' },
+    { id: 4, name: 'Legal Aid Bureau',    number: '+65 1800 225 5529',    icon: '⚖️', color: '#7C3AED' },
+    { id: 5, name: 'Nearest Hospital',    number: '+65 6535 8833', icon: '🏥', color: '#E02424' },
+  ];
+
+  // ── Render contacts ───────────────────────────────────────────────────────
+  function renderContacts() {
+    const list = document.getElementById('contact-list');
+    list.innerHTML = '';
+
+    CONTACTS.forEach(contact => {
+      const card = document.createElement('div');
+      card.className = 'contact-card';
+
+      card.innerHTML = `
+        <div class="contact-icon-wrap" style="background:${contact.color}18">
+          ${contact.icon}
+        </div>
+        <div style="flex:1">
+          <div class="contact-name">${contact.name}</div>
+          <div class="contact-number">${contact.number}</div>
+        </div>
+        <button
+          class="btn-call"
+          id="call-btn-${contact.id}"
+          style="background:${contact.color}"
+          aria-label="Call ${contact.name}"
+          onclick="handleCall(${contact.id}, '${contact.number}', '${contact.color}')">
+          ${phoneIconSVG()}
+        </button>
+      `;
+
+      list.appendChild(card);
+    });
+  }
+
+  function phoneIconSVG() {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 11.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012.86 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
+        stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  function checkIconSVG() {
+    return `<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M3 9L7 13L15 5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  function handleCall(id, number, color) {
+    const btn = document.getElementById('call-btn-' + id);
+    btn.innerHTML = checkIconSVG();
+    btn.style.background = '#057A55';
+
+    setTimeout(() => {
+      btn.innerHTML = phoneIconSVG();
+      btn.style.background = color;
+    }, 1500);
+
+    // Optionally trigger tel: link
+    // window.location.href = 'tel:' + number.replace(/\s/g, '');
+  }
+
+  // ── Map ───────────────────────────────────────────────────────────────────
+  function openMap() {
+    const query = encodeURIComponent(CASE_LOC);
+    window.open('https://www.google.com/maps/search/?api=1&query=' + query, '_blank');
+  }
+
+  // ── AI recommendation ─────────────────────────────────────────────────────
+  async function fetchAIRecommendation() {
+    const prompt = `A student just had a ${CASE_TYPE} at ${CASE_LOC}. Description: ${CASE_DESC}. Urgency: ${URGENCY}. In ONE sentence (max 20 words), which contact should they call FIRST and why?`;
+
+    try {
+      const res = await fetch(CLAUDE_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text || '').join('') || 'Contact Police (999) immediately to file an official report.';
+
+      document.getElementById('banner-loading').style.display = 'none';
+      document.getElementById('banner-text').textContent = text.trim();
+      document.getElementById('banner-text').style.display = 'block';
+    } catch (e) {
+      document.getElementById('banner-loading').style.display = 'none';
+      document.getElementById('banner-text').textContent = 'Contact Police (999) immediately to file an official report.';
+      document.getElementById('banner-text').style.display = 'block';
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    renderContacts();
+    fetchAIRecommendation(); // fire and forget – non-blocking
+
+    // Try to load live case data from backend
+    try {
+      const caseData = await safeStayAPI.getCase(CASE_ID);
+      if (caseData) {
+        document.getElementById('case-subtitle').textContent =
+          (caseData.detected_case || CASE_TYPE) + ' · ' + CASE_ID;
+        const urg = (caseData.urgency_level || URGENCY).toUpperCase();
+        document.getElementById('urgency-badge').textContent = urg;
+        document.getElementById('banner-label').textContent =
+          'Urgency: ' + (caseData.urgency_level || URGENCY) + ' — AI Recommendation';
+      }
+    } catch (e) {
+      // Backend unavailable – fall back to static defaults
+      document.getElementById('case-subtitle').textContent = CASE_TYPE + ' · ' + CASE_ID;
+      console.warn('Could not load case from backend:', e.message);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
