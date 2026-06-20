@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evidence Checklist – SafeStay</title>
+  <script src="../api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+    .badge-high {
+      margin-left: auto;
+      background: #E02424; color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: #fff;
+      padding: 20px 16px 0;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #111827; }
+    .page-sub   { font-size: 13px; color: #6B7280; margin: 4px 0 16px; }
+    .count-label { font-size: 13px; color: #6B7280; text-align: right; }
+    .count-sub   { font-size: 11px; color: #6B7280; }
+
+    /* Progress bar */
+    .progress-wrap { padding-bottom: 20px; }
+    .progress-track {
+      height: 8px; background: #E5E7EB;
+      border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: #1A56DB;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .progress-labels {
+      display: flex; justify-content: space-between; margin-top: 4px;
+    }
+    .progress-text { font-size: 12px; color: #6B7280; }
+    .progress-pct  { font-size: 12px; font-weight: 600; color: #1A56DB; }
+
+    /* ── Checklist ── */
+    .checklist-body {
+      background: #fff;
+      padding: 0 16px;
+      margin-top: 8px;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid #E5E7EB;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+
+    .checkbox {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 2px solid #E5E7EB;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .checkbox.checked {
+      background: #1A56DB;
+      border-color: #1A56DB;
+    }
+    .checkbox svg { display: none; }
+    .checkbox.checked svg { display: block; }
+
+    .item-label {
+      font-size: 15px;
+      color: #111827;
+      flex: 1;
+      transition: all 0.15s;
+    }
+    .item-label.done {
+      color: #6B7280;
+      text-decoration: line-through;
+    }
+
+    .badge-important {
+      font-size: 11px;
+      background: #FDF2F2; color: #E02424;
+      padding: 2px 8px; border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    /* ── AI Tip ── */
+    .ai-tip-box {
+      margin: 16px 16px 0;
+      background: #EBF2FF;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .ai-tip-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0;
+    }
+    .ai-tip-title { font-size: 14px; font-weight: 600; color: #1240A8; }
+    .btn-get-tip {
+      background: #1A56DB; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 6px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-get-tip:disabled { opacity: 0.7; cursor: not-allowed; }
+    .ai-tip-text {
+      font-size: 14px; color: #1240A8;
+      line-height: 1.6; margin-top: 10px;
+    }
+    .ai-tip-placeholder {
+      font-size: 13px; color: #1A56DB;
+      opacity: 0.8; margin-top: 6px;
+    }
+
+    /* ── Error ── */
+    .error-box {
+      margin: 12px 16px 0;
+      background: #FDF2F2; color: #E02424;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px;
+      display: none;
+    }
+
+    /* ── Save button ── */
+    .save-wrap { padding: 16px 16px 0; }
+    .btn-save {
+      width: 100%; padding: 16px;
+      background: #1A56DB; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-save:disabled { opacity: 0.8; cursor: not-allowed; }
+    .btn-save.saved { background: #057A55; }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <div class="appbar-icon">🛡️</div>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub" id="case-subtitle">Theft Case · THF-2024-00023</div>
+    </div>
+    <div class="badge-high" id="urgency-badge">HIGH</div>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="header-row">
+      <div>
+        <h2 class="page-title" id="page-title">Theft Evidence Checklist</h2>
+        <p class="page-sub">Collecting strong evidence can increase the chance of recovery.</p>
+      </div>
+      <div>
+        <div class="count-label"><span id="count-done">3</span> / <span id="count-total">7</span></div>
+        <div class="count-sub">completed</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width: 43%"></div>
+      </div>
+      <div class="progress-labels">
+        <span class="progress-text">Progress</span>
+        <span class="progress-pct" id="progress-pct">43%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist items -->
+  <div class="checklist-body" id="checklist-body"></div>
+
+  <!-- AI Tip -->
+  <div class="ai-tip-box">
+    <div class="ai-tip-row">
+      <span class="ai-tip-title">✨ AI Evidence Tip</span>
+      <button class="btn-get-tip" id="btn-tip" onclick="getAITip()">Get Tip</button>
+    </div>
+    <div class="ai-tip-placeholder" id="tip-placeholder">
+      Tap "Get Tip" for personalised advice based on your checklist progress.
+    </div>
+    <div class="ai-tip-text" id="tip-text" style="display:none"></div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-box" id="error-box"></div>
+
+  <!-- Save -->
+  <div class="save-wrap">
+    <button class="btn-save" id="btn-save" onclick="handleSave()">💾  Save Checklist</button>
+  </div>
+
+</div>
+
+<script>
+  // ── Config ────────────────────────────────────────────────────────────────
+  const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+
+  // Case context – replace with real values passed from your router/session
+  const CASE_ID   = 'THF-2024-00023';
+  const CASE_TYPE = 'Theft';
+  const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
+  const CASE_LOC  = 'University Library, Main St, Sydney';
+
+  // ── Checklist data ────────────────────────────────────────────────────────
+  const ITEMS = [
+    { id: 1, label: 'Photos of the scene',         required: true  },
+    { id: 2, label: 'Receipts / Proof of ownership', required: true  },
+    { id: 3, label: 'CCTV Footage',                required: true  },
+    { id: 4, label: 'Witness Information',          required: false },
+    { id: 5, label: 'Police Report / Case Number',  required: false },
+    { id: 6, label: 'Other Relevant Documents',     required: false },
+    { id: 7, label: 'Anything else helpful',        required: false },
+  ];
+
+  // Pre-check first 3 to match mockup
+  const checked = { 1: true, 2: true, 3: true };
+
+  // ── Render checklist ──────────────────────────────────────────────────────
+  function renderChecklist() {
+    const body = document.getElementById('checklist-body');
+    body.innerHTML = '';
+
+    ITEMS.forEach((item, idx) => {
+      const isChecked = !!checked[item.id];
+
+      const row = document.createElement('div');
+      row.className = 'checklist-item';
+      row.onclick = () => toggle(item.id);
+
+      row.innerHTML = `
+        <div class="checkbox ${isChecked ? 'checked' : ''}" id="cb-${item.id}">
+          <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+            <path d="M1 5L5 9L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="item-label ${isChecked ? 'done' : ''}" id="lbl-${item.id}">${item.label}</span>
+        ${item.required && !isChecked ? `<span class="badge-important" id="badge-${item.id}">Important</span>` : `<span id="badge-${item.id}"></span>`}
+      `;
+
+      body.appendChild(row);
+    });
+
+    updateProgress();
+  }
+
+  function toggle(id) {
+    checked[id] = !checked[id];
+
+    const cb  = document.getElementById('cb-' + id);
+    const lbl = document.getElementById('lbl-' + id);
+    const bdg = document.getElementById('badge-' + id);
+    const item = ITEMS.find(i => i.id === id);
+
+    if (checked[id]) {
+      cb.classList.add('checked');
+      lbl.classList.add('done');
+      if (bdg) bdg.innerHTML = '';
+    } else {
+      cb.classList.remove('checked');
+      lbl.classList.remove('done');
+      if (bdg && item.required) bdg.innerHTML = '<span class="badge-important">Important</span>';
+    }
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done  = Object.values(checked).filter(Boolean).length;
+    const total = ITEMS.length;
+    const pct   = Math.round((done / total) * 100);
+
+    document.getElementById('count-done').textContent  = done;
+    document.getElementById('count-total').textContent = total;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent  = pct + '%';
+  }
+
+  // ── AI Tip ────────────────────────────────────────────────────────────────
+  async function getAITip() {
+    const btn = document.getElementById('btn-tip');
+    const tipText  = document.getElementById('tip-text');
+    const tipPlaceholder = document.getElementById('tip-placeholder');
+
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    tipText.style.display = 'none';
+    tipPlaceholder.style.display = 'none';
+
+    const collected = ITEMS.filter(i => checked[i.id]).map(i => i.label).join(', ');
+    const missing   = ITEMS.filter(i => !checked[i.id]).map(i => i.label).join(', ');
+
+    const prompt = `A student had a ${CASE_TYPE} at ${CASE_LOC}. Description: ${CASE_DESC}. They have collected: ${collected || 'nothing yet'}. They still need: ${missing || 'nothing – all collected!'}. Give ONE concise practical tip (2 sentences max) on what to prioritise next for their police report and insurance claim.`;
+
+    try {
+      const res = await fetch(CLAUDE_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text || '').join('') || 'Unable to load tip.';
+      tipText.textContent = text.trim();
+      tipText.style.display = 'block';
+    } catch (e) {
+      tipText.textContent = 'Unable to load tip. Please check your connection.';
+      tipText.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Get Tip';
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+  async function handleSave() {
+    const btn = document.getElementById('btn-save');
+    const errBox = document.getElementById('error-box');
+
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    errBox.style.display = 'none';
+
+    try {
+      // Confirm evidence files are on record via backend
+      await safeStayAPI.getEvidenceFiles(CASE_ID);
+
+      btn.classList.add('saved');
+      btn.textContent = '✓  Saved!';
+      setTimeout(() => {
+        btn.classList.remove('saved');
+        btn.textContent = '💾  Save Checklist';
+        btn.disabled = false;
+      }, 2500);
+    } catch (err) {
+      errBox.textContent = 'Could not save. ' + (err.message || 'Please try again.');
+      errBox.style.display = 'block';
+      btn.textContent = '💾  Save Checklist';
+      btn.disabled = false;
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    renderChecklist();
+
+    // Try to load live case data from backend
+    try {
+      const caseData = await safeStayAPI.getCase(CASE_ID);
+      if (caseData) {
+        document.getElementById('page-title').textContent =
+          (caseData.detected_case || CASE_TYPE) + ' Evidence Checklist';
+        document.getElementById('case-subtitle').textContent =
+          (caseData.detected_case || CASE_TYPE) + ' Case · ' + CASE_ID;
+        document.getElementById('urgency-badge').textContent =
+          (caseData.urgency_level || 'HIGH').toUpperCase();
+      }
+    } catch (e) {
+      // Backend unavailable – fall back to static defaults
+      console.warn('Could not load case from backend:', e.message);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
