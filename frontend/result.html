@@ -292,13 +292,15 @@
 
 <script src="api.js"></script>
 <script>
-  // api.js doesn't expose checklist/contacts endpoints yet, so these stay
-  // as placeholders until that backend work lands.
+  const params = new URLSearchParams(window.location.search);
+  const caseId = params.get('case_id');
+  const query  = caseId ? '?case_id=' + encodeURIComponent(caseId) : '';
+
   document.getElementById('checklist-btn').addEventListener('click', () => {
-    alert('Checklist view is coming soon.');
+    window.location.href = 'evidence.html' + query;
   });
   document.getElementById('contacts-btn').addEventListener('click', () => {
-    alert('Contacts view is coming soon.');
+    window.location.href = 'contacts.html' + query;
   });
 
   async function loadCaseResult() {
