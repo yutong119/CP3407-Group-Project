@@ -64,6 +64,38 @@ CREATE TABLE checklist_items (
     FOREIGN KEY (case_id) REFERENCES student_cases(case_id)
 );
 
+
+CREATE TABLE checklist_templates (
+    template_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT NOT NULL,
+    item_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    is_required BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (category_id) REFERENCES case_categories(category_id)
+);
+
+CREATE TABLE guidance_steps (
+    step_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT NOT NULL,
+    step_order INT NOT NULL,
+    step_title VARCHAR(255) NOT NULL,
+    step_description TEXT,
+    FOREIGN KEY (category_id) REFERENCES case_categories(category_id)
+);
+
+CREATE TABLE authority_contacts (
+    contact_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT NULL,
+    contact_name VARCHAR(255) NOT NULL,
+    contact_type VARCHAR(100),
+    phone_number VARCHAR(50),
+    email VARCHAR(255),
+    website VARCHAR(255),
+    description TEXT,
+    FOREIGN KEY (category_id) REFERENCES case_categories(category_id)
+);
+
+
 -- Sample users
 INSERT INTO users (full_name, email, password_hash, preferred_language)
 VALUES
