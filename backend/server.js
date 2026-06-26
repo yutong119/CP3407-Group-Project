@@ -36,6 +36,7 @@ app.use('/api/cases', require('./routes/cases'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/evidence', require('./routes/evidence'));
 app.use('/api/categories', require('./routes/categories'));
+app.use('/api/analyze', require('./routes/analyze'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -56,3 +57,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`SafeStay Backend running on port ${PORT}`);
 });
+
+
