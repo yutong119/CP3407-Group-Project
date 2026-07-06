@@ -158,6 +158,11 @@ class SafeStayAPI {
     return this.request(`/evidence/${evidenceId}`, 'DELETE');
   }
 
+  // ===== ANALYSIS ENDPOINT =====
+  async analyzeCase(description, location) {
+    return this.request('/analyze', 'POST', { description, location });
+  }
+
   // ===== CATEGORY ENDPOINTS =====
   async getCategories() {
     return this.request('/categories');
