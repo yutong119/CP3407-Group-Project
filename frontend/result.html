@@ -303,40 +303,62 @@
     window.location.href = 'contacts.html' + query;
   });
 
+  function renderAnalysis(caseData) {
+    if (caseData.detected_case) {
+      document.getElementById('detected-type').textContent = caseData.detected_case;
+    }
+    if (caseData.probability != null) {
+      document.getElementById('detected-prob').textContent = `Probability: ${caseData.probability}%`;
+    }
+
+    const urgency = (caseData.urgency_level || 'medium').toLowerCase();
+    const card  = document.getElementById('urgency-card');
+    const badge = document.getElementById('urgency-badge');
+    const desc  = document.getElementById('urgency-desc');
+
+    card.className  = `urgency-card ${urgency}`;
+    badge.className = `urgency-badge ${urgency}`;
+
+    if (urgency === 'high') {
+      badge.textContent = '⚠ High';
+      desc.textContent  = 'This situation requires immediate attention. Please act on the steps below as soon as possible.';
+    } else if (urgency === 'low') {
+      badge.textContent = '✓ Low';
+      desc.textContent  = 'This situation is not urgent, but it\u2019s still worth following the steps below.';
+    } else {
+      badge.textContent = '⚠ Medium';
+      desc.textContent  = 'This situation should be addressed soon. Review the recommended steps below.';
+    }
+
+    // Recommended actions — replace the static list if the analysis provided one
+    if (Array.isArray(caseData.recommended_actions) && caseData.recommended_actions.length) {
+      const actionsCard = document.querySelector('.actions-card');
+      const items = caseData.recommended_actions.map((text, i) => `
+        <div class="action-item">
+          <div class="action-num">${i + 1}</div>
+          <div class="action-text">${text}</div>
+        </div>
+      `).join('');
+      actionsCard.innerHTML = '<h3>Recommended Actions</h3>' + items;
+    }
+  }
+
   async function loadCaseResult() {
+    // Prefer the fresh analysis stored right after describe.html called /api/analyze
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (cached) {
+      try { renderAnalysis(JSON.parse(cached)); } catch (e) { console.warn('Bad cached analysis:', e); }
+    }
+
+    // Then sync with the backend — authoritative, and needed for direct/shared links
     const params = new URLSearchParams(window.location.search);
     const caseId = params.get('case_id');
-    if (!caseId) return; // no case_id in the URL — keep the static placeholder content
+    if (!caseId) return;
 
     try {
       const response = await safeStayAPI.getCase(caseId);
       const caseData = response.case || response; // tolerate either response shape
-
-      if (caseData.detected_case) {
-        document.getElementById('detected-type').textContent = caseData.detected_case;
-      }
-      if (caseData.probability != null) {
-        document.getElementById('detected-prob').textContent = `Probability: ${caseData.probability}%`;
-      }
-
-      const urgency = (caseData.urgency_level || 'medium').toLowerCase();
-      const card  = document.getElementById('urgency-card');
-      const badge = document.getElementById('urgency-badge');
-      const desc  = document.getElementById('urgency-desc');
-
-      card.className  = `urgency-card ${urgency}`;
-      badge.className = `urgency-badge ${urgency}`;
-
-      if (urgency === 'high') {
-        badge.textContent = '⚠ High';
-        desc.textContent  = 'This situation requires immediate attention. Please act on the steps below as soon as possible.';
-      } else if (urgency === 'low') {
-        badge.textContent = '✓ Low';
-        desc.textContent  = 'This situation is not urgent, but it\u2019s still worth following the steps below.';
-      } else {
-        badge.textContent = '⚠ Medium';
-        desc.textContent  = 'This situation should be addressed soon. Review the recommended steps below.';
-      }
+      renderAnalysis(caseData);
     } catch (err) {
       console.error('Failed to load case result:', err);
     }
