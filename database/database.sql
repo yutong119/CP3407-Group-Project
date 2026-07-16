@@ -218,4 +218,6 @@ VALUES
 (2, 'Embassy Support', 'Embassy', NULL, NULL, NULL, 'Recommended for lost passport cases.'),
 (3, 'Singapore Police Force', 'Police', '999', NULL, 'https://www.police.gov.sg', 'Recommended for scam or fraud cases.'),
 (4, 'Legal Aid Bureau', 'Legal Aid', NULL, NULL, 'https://lab.mlaw.gov.sg', 'Recommended for rental dispute cases.'),
-(5, 'Ambulance / SCDF', 'Hospital', '995', NULL, 'https://www.scdf.gov.sg', 'Recommended for medical emergency cases.');
+(5, 'Ambulance / SCDF', 'Hospital', '995', NULL, 'https://www.scdf.gov.sg', 'Recommended for medical emergency cases.'),
+(6, 'University Student Support', 'University Support', NULL, 'support@example.edu', NULL, 'Recommended for general or unclear student issues.'),
+(3, 'Anti-Scam Helpline', 'Scam Support', '1800-722-6688', NULL, 'https://www.scamalert.sg', 'Recommended for scam prevention advice and reporting support.');
