@@ -248,14 +248,17 @@
   // ── Config ────────────────────────────────────────────────────────────────
   const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
-  // Case context – replace with real values passed from your router/session
-  const CASE_ID   = 'THF-2024-00023';
-  const CASE_TYPE = 'Theft';
+  // Case context – case_id comes from the URL (?case_id=...), the rest are
+  // fallback defaults used only if no analysis/case data is available yet.
+  const params = new URLSearchParams(window.location.search);
+  const CASE_ID   = params.get('case_id') || 'THF-2024-00023';
+  let CASE_TYPE = 'Theft';
   const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
   const CASE_LOC  = 'University Library, Main St, Sydney';
 
   // ── Checklist data ────────────────────────────────────────────────────────
-  const ITEMS = [
+  // Fallback defaults — overwritten by evidence_checklist from the analysis if present
+  let ITEMS = [
     { id: 1, label: 'Photos of the scene',         required: true  },
     { id: 2, label: 'Receipts / Proof of ownership', required: true  },
     { id: 3, label: 'CCTV Footage',                required: true  },
@@ -265,8 +268,24 @@
     { id: 7, label: 'Anything else helpful',        required: false },
   ];
 
-  // Pre-check first 3 to match mockup
-  const checked = { 1: true, 2: true, 3: true };
+  const checked = {};
+
+  // Load the analysis produced on describe.html (page 4), if present
+  function loadAnalysis() {
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (!cached) return;
+    try {
+      const analysis = JSON.parse(cached);
+      if (Array.isArray(analysis.evidence_checklist) && analysis.evidence_checklist.length) {
+        ITEMS = analysis.evidence_checklist;
+      }
+      if (analysis.detected_case) {
+        CASE_TYPE = analysis.detected_case;
+      }
+    } catch (e) {
+      console.warn('Bad cached analysis:', e);
+    }
+  }
 
   // ── Render checklist ──────────────────────────────────────────────────────
   function renderChecklist() {
@@ -397,6 +416,7 @@
 
   // ── Init ──────────────────────────────────────────────────────────────────
   async function init() {
+    loadAnalysis();
     renderChecklist();
 
     // Try to load live case data from backend

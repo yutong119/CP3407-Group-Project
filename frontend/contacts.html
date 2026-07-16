@@ -210,21 +210,40 @@
   // ── Config ────────────────────────────────────────────────────────────────
   const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 
-  // Case context – replace with real values from your router/session
-  const CASE_ID   = 'THF-2024-00023';
-  const CASE_TYPE = 'Theft';
+  // Case context – case_id comes from the URL (?case_id=...), the rest are
+  // fallback defaults used only if no analysis/case data is available yet.
+  const params = new URLSearchParams(window.location.search);
+  const CASE_ID   = params.get('case_id') || 'THF-2024-00023';
+  let CASE_TYPE = 'Theft';
   const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
   const CASE_LOC  = 'University Library, Singapore';
-  const URGENCY   = 'High';
+  let URGENCY   = 'High';
 
   // ── Contacts data ─────────────────────────────────────────────────────────
-  const CONTACTS = [
+  // Fallback defaults — overwritten by recommended_contacts from the analysis if present
+  let CONTACTS = [
     { id: 1, name: 'Police (Emergency)',  number: '999',             icon: '🚔', color: '#1A56DB' },
     { id: 2, name: 'University Support',  number: '+65 6516 1177', icon: '🏫', color: '#057A55' },
     { id: 3, name: 'Singapore Embassy',   number: '+65 6235 4555',   icon: '🏛️', color: '#C27803' },
     { id: 4, name: 'Legal Aid Bureau',    number: '+65 1800 225 5529',    icon: '⚖️', color: '#7C3AED' },
     { id: 5, name: 'Nearest Hospital',    number: '+65 6535 8833', icon: '🏥', color: '#E02424' },
   ];
+
+  // Load the analysis produced on describe.html (page 4), if present
+  function loadAnalysis() {
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (!cached) return;
+    try {
+      const analysis = JSON.parse(cached);
+      if (Array.isArray(analysis.recommended_contacts) && analysis.recommended_contacts.length) {
+        CONTACTS = analysis.recommended_contacts;
+      }
+      if (analysis.detected_case) CASE_TYPE = analysis.detected_case;
+      if (analysis.urgency_level) URGENCY = analysis.urgency_level;
+    } catch (e) {
+      console.warn('Bad cached analysis:', e);
+    }
+  }
 
   // ── Render contacts ───────────────────────────────────────────────────────
   function renderContacts() {
@@ -319,6 +338,7 @@
 
   // ── Init ──────────────────────────────────────────────────────────────────
   async function init() {
+    loadAnalysis();
     renderContacts();
     fetchAIRecommendation(); // fire and forget – non-blocking
 

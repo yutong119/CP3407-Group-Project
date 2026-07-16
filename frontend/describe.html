@@ -369,22 +369,31 @@
     }
 
     btn.disabled = true;
-    btn.textContent = 'Submitting...';
+    btn.textContent = 'Analyzing...';
 
     try {
       const locationText = document.getElementById('location-text').textContent;
+
+      // 1. Run AI analysis on the description + location
+      const analysis = await safeStayAPI.analyzeCase(description, locationText);
+
+      // 2. Persist the full analysis so pages 5-7 (result/evidence/contacts)
+      //    can read detected_case, urgency_level, probability, recommended_actions,
+      //    evidence_checklist, and recommended_contacts without another round trip.
+      sessionStorage.setItem('safestay_analysis', JSON.stringify(analysis));
+
+      btn.textContent = 'Submitting...';
       const caseTitle = description.length > 60 ? description.slice(0, 60) + '...' : description;
 
-      // urgency_level / detected_case / probability are left null here —
-      // they're expected to come back from the backend's AI classification step.
+      // 3. Create the case using the real analysis results instead of nulls
       const created = await safeStayAPI.createCase(
         selectedCategoryId,
         caseTitle,
         description,
         locationText,
-        null,
-        null,
-        null
+        analysis.urgency_level,
+        analysis.detected_case,
+        analysis.probability
       );
 
       const caseId = created.case_id || created.id || (created.case && created.case.case_id);
