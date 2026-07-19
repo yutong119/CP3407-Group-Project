@@ -237,7 +237,13 @@
     SafeStay
   </div>
   <div class="nav-right">
-    <div class="nav-lang">🌐 English ▾</div>
+    <div class="nav-lang" id="nav-lang" onclick="location.href='language.html?return_to=index.html'">🌐 <span id="nav-lang-text">English</span> ▾</div>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('safestay_preferred_language');
+      if (saved) document.getElementById('nav-lang-text').textContent = saved;
+    })();
+  </script>
     <button class="btn-nav outline" id="nav-history-btn" style="display:none" onclick="location.href='history.html'">My Cases</button>
     <button class="btn-nav outline" id="nav-profile-btn" style="display:none" onclick="location.href='profile.html'">Profile</button>
     <button class="btn-nav outline" id="nav-login-btn" onclick="location.href='login.html'">Log in</button>
