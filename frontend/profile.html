@@ -242,6 +242,10 @@
     document.getElementById('profile-email').textContent = profile.email || '—';
     if (profile.preferred_language) {
       document.getElementById('current-language').textContent = profile.preferred_language;
+      localStorage.setItem('safestay_preferred_language', profile.preferred_language);
+    } else {
+      const cached = localStorage.getItem('safestay_preferred_language');
+      if (cached) document.getElementById('current-language').textContent = cached;
     }
   }
 
@@ -254,6 +258,8 @@
       console.warn('Could not load profile:', err.message);
       document.getElementById('profile-name').textContent = 'SafeStay User';
       document.getElementById('profile-email').textContent = 'Sign in to view your profile';
+      const cached = localStorage.getItem('safestay_preferred_language');
+      if (cached) document.getElementById('current-language').textContent = cached;
     }
   }
 
