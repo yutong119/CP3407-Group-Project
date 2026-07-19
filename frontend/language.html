@@ -93,7 +93,7 @@
 
   <!-- App bar -->
   <div class="appbar">
-    <a href="profile.html" class="appbar-icon">←</a>
+    <a href="profile.html" class="appbar-icon" id="appbar-back">←</a>
     <div>
       <div class="appbar-title">SafeStay</div>
       <div class="appbar-sub">Language Support</div>
@@ -110,9 +110,16 @@
   <div class="save-note" id="save-note">✓ Language preference saved</div>
   <div class="error-box" id="error-box"></div>
 
+  <a href="profile.html" id="btn-done" style="display:block;margin:20px 16px 0;padding:13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:14px;font-weight:600;color:#374151;text-align:center;text-decoration:none">Done</a>
+
 </div>
 
 <script>
+  const params = new URLSearchParams(window.location.search);
+  const RETURN_TO = params.get('return_to') || 'profile.html';
+  document.getElementById('appbar-back').href = RETURN_TO;
+  document.getElementById('btn-done').href = RETURN_TO;
+
   const LANGUAGES = [
     { code: 'English',            flag: '🇬🇧', native: 'English' },
     { code: 'Chinese (Simplified)', flag: '🇨🇳', native: '中文（简体）' },
@@ -158,7 +165,9 @@
 
     try {
       await safeStayAPI.updateProfile(CURRENT_NAME, code);
+      localStorage.setItem('safestay_preferred_language', code);
       note.style.display = 'block';
+      setTimeout(() => { window.location.href = RETURN_TO; }, 900);
     } catch (err) {
       CURRENT_LANGUAGE = previous;
       render();
@@ -181,6 +190,7 @@
       CURRENT_NAME = profile.full_name || profile.name || '';
       if (profile.preferred_language) {
         CURRENT_LANGUAGE = profile.preferred_language;
+        localStorage.setItem('safestay_preferred_language', profile.preferred_language);
       }
     } catch (err) {
       console.warn('Could not load profile:', err.message);
