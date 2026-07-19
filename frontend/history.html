@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Cases – SafeStay</title>
+  <script src="api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+    .btn-new {
+      margin-left: auto;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      border: none;
+      font-size: 12px; font-weight: 700;
+      padding: 7px 12px; border-radius: 10px;
+      cursor: pointer;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding: 16px 16px 0;
+      overflow-x: auto;
+    }
+    .tab {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab.active { background: #1A56DB; border-color: #1A56DB; color: #fff; }
+
+    /* ── Case list ── */
+    .case-list { padding: 16px 16px 0; }
+
+    .case-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .case-icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+      background: #EFF6FF;
+    }
+
+    .case-name { font-size: 15px; font-weight: 600; color: #111827; }
+    .case-meta { font-size: 12px; color: #6B7280; margin-top: 2px; }
+
+    .case-status {
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .case-status.in-progress { background: #FEF3C7; color: #92400E; }
+    .case-status.resolved    { background: #DCFCE7; color: #166534; }
+    .case-status.closed      { background: #F3F4F6; color: #6B7280; }
+
+    .empty-state {
+      margin: 40px 16px;
+      text-align: center;
+      color: #6B7280;
+      font-size: 14px;
+    }
+
+    .error-box {
+      margin: 16px 16px 0;
+      background: #FDF2F2; color: #E02424;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <a href="index.html" class="appbar-icon">🛡️</a>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub">My Cases</div>
+    </div>
+    <a class="btn-new" href="describe.html">+ New Case</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-status="all">All</div>
+    <div class="tab" data-status="in progress">In Progress</div>
+    <div class="tab" data-status="resolved">Resolved</div>
+    <div class="tab" data-status="closed">Closed</div>
+  </div>
+
+  <!-- Case list -->
+  <div class="case-list" id="case-list"></div>
+
+  <div class="empty-state" id="empty-state" style="display:none">No cases yet. Start by describing your situation.</div>
+  <div class="error-box" id="error-box"></div>
+
+</div>
+
+<script>
+  let ALL_CASES = [];
+  let ACTIVE_FILTER = 'all';
+
+  const CASE_ICONS = {
+    'theft': '🛍️',
+    'lost passport': '🛂',
+    'scam': '💻',
+    'rental dispute': '🏠',
+    'medical emergency': '🏥',
+  };
+
+  function iconFor(caseType) {
+    return CASE_ICONS[(caseType || '').toLowerCase()] || '📁';
+  }
+
+  function statusClass(status) {
+    const s = (status || 'in progress').toLowerCase();
+    if (s.includes('resolved')) return 'resolved';
+    if (s.includes('closed')) return 'closed';
+    return 'in-progress';
+  }
+
+  function formatDate(c) {
+    if (c.created_at) {
+      return new Date(c.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    return c.date || '';
+  }
+
+  function render() {
+    const list = document.getElementById('case-list');
+    const empty = document.getElementById('empty-state');
+    list.innerHTML = '';
+
+    const filtered = ACTIVE_FILTER === 'all'
+      ? ALL_CASES
+      : ALL_CASES.filter(c => (c.case_status || 'in progress').toLowerCase().includes(ACTIVE_FILTER));
+
+    if (!filtered.length) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    filtered.forEach(c => {
+      const id = c.case_id || c.id;
+      const type = c.detected_case || c.case_title || 'Case';
+      const card = document.createElement('a');
+      card.className = 'case-card';
+      card.href = 'case-details.html?case_id=' + encodeURIComponent(id);
+      card.innerHTML = `
+        <div class="case-icon-wrap">${iconFor(c.detected_case)}</div>
+        <div style="flex:1">
+          <div class="case-name">${type}</div>
+          <div class="case-meta">${formatDate(c)} · ${c.location || 'Location unknown'}</div>
+        </div>
+        <div class="case-status ${statusClass(c.case_status)}">${(c.case_status || 'In Progress')}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function setupTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        ACTIVE_FILTER = tab.dataset.status;
+        render();
+      });
+    });
+  }
+
+  async function init() {
+    setupTabs();
+
+    if (!safeStayAPI.token) {
+      location.href = 'login.html';
+      return;
+    }
+
+    try {
+      const response = await safeStayAPI.getAllCases();
+      ALL_CASES = response.cases || response || [];
+      render();
+    } catch (err) {
+      console.warn('Could not load cases:', err.message);
+      const errBox = document.getElementById('error-box');
+      errBox.textContent = 'Could not load your cases. ' + (err.message || '');
+      errBox.style.display = 'block';
+      document.getElementById('empty-state').style.display = 'block';
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
