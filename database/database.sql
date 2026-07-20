@@ -100,6 +100,8 @@ CREATE TABLE authority_contacts (
 INSERT INTO users (full_name, email, password_hash, preferred_language)
 VALUES
 ('Yutong Ji', 'yutong@example.com', 'hashed_password_here', 'English'),
+('Li Wei','liwei@example.com','hashed_password','Chinese'),
+('Sin Min', 'sin@example.com', 'hashed_password_here', 'Burmese'),
 ('Nang Laung Phoung', 'nang@example.com', 'hashed_password_here', 'English');
 
 -- Sample case categories
