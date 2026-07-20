@@ -136,11 +136,30 @@ VALUES
 
 
 -- Sample evidence files
-INSERT INTO evidence_files 
+INSERT INTO evidence_files
 (case_id, file_name, file_type, file_path, description)
 VALUES
 (1, 'photo_scene.jpg', 'image/jpeg', '/uploads/photo_scene.jpg', 'Photo of the place where the bag was stolen.'),
-(1, 'receipt.pdf', 'application/pdf', '/uploads/receipt.pdf', 'Proof of ownership for the stolen item.');
+(1, 'receipt.pdf', 'application/pdf', '/uploads/receipt.pdf', 'Proof of ownership for the stolen item.'),
+
+(2, 'passport_copy.jpg', 'image/jpeg', '/uploads/passport_copy.jpg', 'Photo or scanned copy of the lost passport.'),
+(2, 'police_report_lost_passport.pdf', 'application/pdf', '/uploads/police_report_lost_passport.pdf', 'Police report made after the passport was lost.'),
+(2, 'flight_itinerary.pdf', 'application/pdf', '/uploads/flight_itinerary.pdf', 'Flight itinerary showing upcoming travel details.'),
+
+(3, 'scam_chat_screenshot.png', 'image/png', '/uploads/scam_chat_screenshot.png', 'Screenshot of the conversation with the suspected scammer.'),
+(3, 'payment_receipt.pdf', 'application/pdf', '/uploads/payment_receipt.pdf', 'Proof of payment made to the suspected scammer.'),
+(3, 'seller_profile.png', 'image/png', '/uploads/seller_profile.png', 'Screenshot of the seller profile and account information.'),
+
+(4, 'rental_contract.pdf', 'application/pdf', '/uploads/rental_contract.pdf', 'Copy of the tenancy agreement signed by the student and landlord.'),
+(4, 'deposit_payment_receipt.pdf', 'application/pdf', '/uploads/deposit_payment_receipt.pdf', 'Receipt showing payment of the rental deposit.'),
+(4, 'landlord_chat_history.png', 'image/png', '/uploads/landlord_chat_history.png', 'Screenshot of messages exchanged with the landlord.'),
+
+(5, 'medical_report.pdf', 'application/pdf', '/uploads/medical_report.pdf', 'Medical report issued by the hospital.'),
+(5, 'hospital_bill.pdf', 'application/pdf', '/uploads/hospital_bill.pdf', 'Hospital bill and treatment receipt.'),
+(5, 'medicine_prescription.jpg', 'image/jpeg', '/uploads/medicine_prescription.jpg', 'Photo of the medicine prescription provided by the doctor.'),
+
+(6, 'incident_notes.txt', 'text/plain', '/uploads/incident_notes.txt', 'Written notes describing the personal safety concern.'),
+(6, 'supporting_photo.jpg', 'image/jpeg', '/uploads/supporting_photo.jpg', 'Supporting photo related to the reported issue.');
 
 -- Sample checklist items
 INSERT INTO checklist_items (case_id, item_name, is_completed)
