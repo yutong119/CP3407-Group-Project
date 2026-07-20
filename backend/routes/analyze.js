@@ -22,20 +22,22 @@ router.post('/', async (req, res) => {
 
     const analysis = detectIncident(description);
 
-    const [guidanceSteps] = await getGuidanceSteps(connection, analysis.category_id);
-    const [checklist] = await getChecklistTemplates(connection, analysis.category_id);
-    const [contacts] = await getAuthorityContacts(connection, analysis.category_id);
+    const guidanceSteps = await getGuidanceSteps(connection, analysis.category_id);
+    const checklist = await getChecklistTemplates(connection, analysis.category_id);
+    const contacts = await getAuthorityContacts(connection, analysis.category_id);
 
     connection.release();
+
+    const toArray = (value) => Array.isArray(value) ? value : (value ? [value] : []);
 
     return res.json({
       success: true,
       analysis: {
         ...analysis,
         location: location || null,
-        recommended_actions: guidanceSteps,
-        evidence_checklist: checklist,
-        recommended_contacts: contacts,
+        recommended_actions: toArray(guidanceSteps),
+        evidence_checklist: toArray(checklist),
+        recommended_contacts: toArray(contacts),
         draft_message: generateDraftMessage(analysis, description, location)
       }
     });
