@@ -263,31 +263,44 @@ VALUES
 (1, 1, 'Stay safe', 'Move to a safe location and avoid confronting the suspect.'),
 (1, 2, 'Collect evidence', 'Prepare photos, receipts, witness details, and CCTV information if available.'),
 (1, 3, 'Report to police', 'Make a police report and keep the case number.'),
+(1, 4, 'Protect your accounts', 'Cancel or temporarily block any stolen bank cards, mobile payment accounts, or SIM cards.'),
+(1, 5, 'Inform relevant organisations', 'Contact your university, insurance provider, or transport operator if the stolen item is related to them.'),
 
 -- Lost Passport
 (2, 1, 'Report the loss', 'Report the lost passport to the police as soon as possible.'),
 (2, 2, 'Contact embassy', 'Contact your embassy or high commission for passport replacement guidance.'),
 (2, 3, 'Prepare documents', 'Prepare identification, passport copy, police report, and travel itinerary.'),
+(2, 4, 'Check travel requirements', 'Confirm whether your upcoming travel plans need to be changed while waiting for a replacement passport.'),
+(2, 5, 'Keep replacement records', 'Save your embassy appointment details, payment receipts, and replacement passport documents.'),
 
 -- Scam / Online Fraud
 (3, 1, 'Stop communication', 'Do not send more money or personal information to the scammer.'),
 (3, 2, 'Save evidence', 'Save screenshots, payment proof, phone numbers, emails, and website links.'),
 (3, 3, 'Report the scam', 'Report the scam to the police or relevant online fraud reporting channel.'),
+(3, 4, 'Contact your bank', 'Ask your bank to block the transaction, secure your account, or investigate the payment.'),
+(3, 5, 'Secure your online accounts', 'Change affected passwords and enable two-factor authentication on important accounts.'),
 
 -- Rental Dispute
 (4, 1, 'Review your contract', 'Check your rental agreement for deposit, rent, and termination terms.'),
 (4, 2, 'Collect records', 'Save payment receipts, messages, emails, and photos of the property.'),
 (4, 3, 'Seek support', 'Contact university support, legal aid, or a tenant support service if needed.'),
+(4, 4, 'Contact the landlord formally', 'Send a clear written request explaining the issue and keep a copy of the communication.'),
+(4, 5, 'Consider mediation or legal advice', 'Seek help from a mediation service, university support team, or legal aid organisation.'),
+
 
 -- Medical Emergency
 (5, 1, 'Call emergency help', 'Call emergency medical services if the situation is urgent.'),
 (5, 2, 'Visit hospital or clinic', 'Go to the nearest hospital or clinic for medical attention.'),
 (5, 3, 'Keep medical records', 'Keep medical reports, bills, receipts, and insurance documents.'),
+(5, 4, 'Inform your emergency contact', 'Tell a trusted person, family member, or university support officer about the situation.'),
+(5, 5, 'Follow the treatment plan', 'Take prescribed medicine, attend follow-up appointments, and keep all medical documents.'),
 
 -- Other Issues
 (6, 1, 'Describe the issue clearly', 'Write down what happened, when it happened, and where it happened.'),
 (6, 2, 'Collect supporting evidence', 'Upload photos, screenshots, documents, or witness details.'),
-(6, 3, 'Ask for support', 'Contact university support or relevant authority for advice.');
+(6, 3, 'Ask for support', 'Contact university support or relevant authority for advice.'),
+(6, 4, 'Identify the correct authority', 'Determine whether the issue should be handled by the police, university, landlord, hospital, or another organisation.'),
+(6, 5, 'Keep a record of actions', 'Record who you contacted, what advice was provided, and any case or reference numbers.');
 
 -- Sample authority contacts
 INSERT INTO authority_contacts 
