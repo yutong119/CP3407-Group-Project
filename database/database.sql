@@ -116,7 +116,24 @@ VALUES
 INSERT INTO student_cases 
 (user_id, category_id, case_title, description, location, case_status, urgency_level, detected_case, probability)
 VALUES
-(1, 1, 'Theft Case', 'My bag was stolen near the university library.', 'University Library', 'In Progress', 'High', 'Theft', 92.00);
+(1, 1, 'Theft Case', 'My bag was stolen near the university library.', 'University Library', 'In Progress', 'High', 'Theft', 92.00),
+
+-- Lost Passport
+(2, 2, 'Lost Passport at Changi Airport', 'I accidentally lost my passport while waiting for my flight at Changi Airport Terminal 3.', 'Changi Airport Terminal 3', 'Resolved', 'High', 'Lost Passport', 96.50),
+
+-- Scam / Online Fraud
+(1, 3, 'Online Shopping Scam', 'I paid for a second-hand laptop through an online marketplace, but the seller disappeared after receiving the payment.', 'Orchard Road', 'Closed', 'High', 'Scam / Online Fraud', 94.20),
+
+-- Rental Dispute
+(2, 4, 'Rental Deposit Dispute', 'My landlord refused to return my rental deposit after I moved out, even though there was no damage to the room.', 'Yishun', 'In Progress', 'Medium', 'Rental Dispute', 89.80),
+
+-- Medical Emergency
+(1, 5, 'Food Poisoning', 'I experienced severe stomach pain and vomiting after eating at a restaurant and visited the emergency department.', 'Singapore General Hospital', 'Resolved', 'High', 'Medical Emergency', 97.30),
+
+-- Other Issues
+(2, 6, 'Need University Support', 'I am unsure which authority to contact regarding my personal safety concern and need guidance.', 'James Cook University Singapore', 'Closed', 'Medium', 'Other Issues', 72.40);
+
+
 
 -- Sample evidence files
 INSERT INTO evidence_files 
