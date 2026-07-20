@@ -217,31 +217,44 @@ VALUES
 (1, 'CCTV Footage', 'Check whether CCTV footage is available near the incident location.', FALSE),
 (1, 'Witness Information', 'Add witness name or contact details if anyone saw the incident.', FALSE),
 (1, 'Police Report / Case Number', 'Add the police report number after reporting the theft.', TRUE),
+(1, 'Bank card cancellation confirmation', 'Provide proof that your lost bank cards have been cancelled if applicable.', FALSE),
+(1, 'Insurance claim documents', 'Upload insurance claim documents if the stolen item is insured.', FALSE),
 
 -- Lost Passport
 (2, 'Passport photo or copy', 'Upload a photo or scanned copy of your passport if available.', TRUE),
 (2, 'Police report', 'Upload the police report for the lost passport.', TRUE),
 (2, 'Embassy appointment details', 'Record your embassy appointment or contact details.', TRUE),
 (2, 'Travel itinerary', 'Upload flight tickets or travel documents if affected.', FALSE),
+(2, 'Identification document', 'Upload another identification document such as a student ID or NRIC copy.', TRUE),
+(2, 'Embassy payment receipt', 'Upload the receipt for passport replacement if available.', FALSE),
+
 
 -- Scam / Online Fraud
 (3, 'Screenshots of messages', 'Upload screenshots of chat messages, emails, or scam websites.', TRUE),
 (3, 'Payment proof', 'Upload bank transfer receipts or payment screenshots.', TRUE),
 (3, 'Scammer contact details', 'Record phone number, email, website, or social media account.', TRUE),
+(3, 'Bank statement', 'Upload a bank statement showing the fraudulent transaction.', FALSE),
+(3, 'Police report', 'Upload the police report related to the scam.', TRUE),
 
 -- Rental Dispute
 (4, 'Rental contract', 'Upload your rental agreement or tenancy contract.', TRUE),
 (4, 'Payment records', 'Upload rent payment receipts or bank transfer records.', TRUE),
 (4, 'Chat history with landlord', 'Upload screenshots of communication with landlord or agent.', FALSE),
+(4, 'Property photos', 'Upload photos showing the condition of the rental property.', FALSE),
+(4, 'Deposit refund request', 'Upload emails or letters requesting the return of your deposit.', FALSE),
 
 -- Medical Emergency
 (5, 'Medical report', 'Upload medical report or consultation document if available.', TRUE),
 (5, 'Hospital bill or receipt', 'Upload medical bill or payment receipt.', FALSE),
 (5, 'Insurance document', 'Upload insurance information if available.', FALSE),
+(5, 'Doctor prescription', 'Upload the prescription issued by the attending doctor.', FALSE),
+(5, 'Emergency contact information', 'Provide emergency contact details if available.', TRUE),
 
 -- Other Issues
 (6, 'Incident description', 'Write a clear description of what happened.', TRUE),
-(6, 'Supporting evidence', 'Upload any useful documents, photos, or screenshots.', FALSE);
+(6, 'Supporting evidence', 'Upload any useful documents, photos, or screenshots.', FALSE),
+(6, 'Witness information', 'Provide contact details of any witnesses if applicable.', FALSE),
+(6, 'University support request', 'Record any request submitted to the university support office.', FALSE);
 
 -- Sample guidance steps 
 INSERT INTO guidance_steps (category_id, step_order, step_title, step_description)
