@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile – SafeStay</title>
+  <script src="api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+
+    /* ── Profile header card ── */
+    .profile-card {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: #EFF6FF;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; flex-shrink: 0;
+    }
+    .profile-name  { font-size: 16px; font-weight: 700; color: #111827; }
+    .profile-email { font-size: 13px; color: #6B7280; margin-top: 2px; }
+
+    /* ── Menu list ── */
+    .menu-list {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .menu-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .menu-row:last-child { border-bottom: none; }
+    .menu-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
+    .menu-label { flex: 1; font-size: 14px; font-weight: 500; color: #111827; }
+    .menu-value { font-size: 13px; color: #6B7280; }
+    .menu-chevron { color: #9CA3AF; font-size: 16px; flex-shrink: 0; }
+    .menu-row.danger .menu-label { color: #E02424; }
+
+    /* ── Section title ── */
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 20px 16px 8px;
+    }
+    .section-title { font-size: 14px; font-weight: 700; color: #111827; }
+    .section-link { font-size: 13px; color: #1A56DB; text-decoration: none; font-weight: 500; }
+
+    /* ── Case history mini list ── */
+    .history-list { margin: 0 16px; }
+    .history-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .history-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: #EFF6FF;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .history-name { font-size: 13px; font-weight: 600; color: #111827; }
+    .history-meta { font-size: 11px; color: #6B7280; margin-top: 1px; }
+    .history-status {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .history-status.in-progress { background: #FEF3C7; color: #92400E; }
+    .history-status.resolved    { background: #DCFCE7; color: #166534; }
+    .history-status.closed      { background: #F3F4F6; color: #6B7280; }
+
+    .empty-note { font-size: 13px; color: #6B7280; margin: 0 16px 8px; }
+    .error-box {
+      margin: 12px 16px 0;
+      background: #FDF2F2; color: #E02424;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <a href="index.html" class="appbar-icon">🛡️</a>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub">My Profile</div>
+    </div>
+  </div>
+
+  <!-- Profile header -->
+  <div class="profile-card">
+    <div class="avatar">👤</div>
+    <div>
+      <div class="profile-name" id="profile-name">Loading…</div>
+      <div class="profile-email" id="profile-email">—</div>
+    </div>
+  </div>
+
+  <!-- Menu -->
+  <div class="menu-list">
+    <a class="menu-row" href="#" id="row-personal">
+      <span class="menu-icon">👤</span>
+      <span class="menu-label">Personal Information</span>
+      <span class="menu-chevron">›</span>
+    </a>
+    <a class="menu-row" href="contacts.html">
+      <span class="menu-icon">📇</span>
+      <span class="menu-label">Saved Contacts</span>
+      <span class="menu-chevron">›</span>
+    </a>
+    <a class="menu-row" href="language.html">
+      <span class="menu-icon">🌐</span>
+      <span class="menu-label">Language</span>
+      <span class="menu-value" id="current-language">English</span>
+      <span class="menu-chevron">›</span>
+    </a>
+    <a class="menu-row" href="#" id="row-notifications">
+      <span class="menu-icon">🔔</span>
+      <span class="menu-label">Notification Settings</span>
+      <span class="menu-chevron">›</span>
+    </a>
+    <a class="menu-row" href="#" id="row-privacy">
+      <span class="menu-icon">🔒</span>
+      <span class="menu-label">Privacy &amp; Security</span>
+      <span class="menu-chevron">›</span>
+    </a>
+    <a class="menu-row" href="#" id="row-help">
+      <span class="menu-icon">❓</span>
+      <span class="menu-label">Help &amp; Support</span>
+      <span class="menu-chevron">›</span>
+    </a>
+    <a class="menu-row danger" href="#" id="row-logout">
+      <span class="menu-icon">🚪</span>
+      <span class="menu-label">Log Out</span>
+      <span class="menu-chevron">›</span>
+    </a>
+  </div>
+
+  <!-- Case history -->
+  <div class="section-title-row">
+    <div class="section-title">Case History</div>
+    <a class="section-link" href="history.html">View all →</a>
+  </div>
+  <div class="history-list" id="history-list"></div>
+  <div class="empty-note" id="history-empty" style="display:none">No cases yet.</div>
+
+  <div class="error-box" id="error-box"></div>
+
+</div>
+
+<script>
+  const CASE_ICONS = {
+    'theft': '🛍️',
+    'lost passport': '🛂',
+    'scam': '💻',
+    'rental dispute': '🏠',
+    'medical emergency': '🏥',
+  };
+  function iconFor(caseType) {
+    return CASE_ICONS[(caseType || '').toLowerCase()] || '📁';
+  }
+  function statusClass(status) {
+    const s = (status || 'in progress').toLowerCase();
+    if (s.includes('resolved')) return 'resolved';
+    if (s.includes('closed')) return 'closed';
+    return 'in-progress';
+  }
+  function formatDate(c) {
+    if (c.created_at) {
+      return new Date(c.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    return c.date || '';
+  }
+
+  function renderProfile(profile) {
+    document.getElementById('profile-name').textContent = profile.full_name || profile.name || 'SafeStay User';
+    document.getElementById('profile-email').textContent = profile.email || '—';
+    if (profile.preferred_language) {
+      document.getElementById('current-language').textContent = profile.preferred_language;
+      localStorage.setItem('safestay_preferred_language', profile.preferred_language);
+    } else {
+      const cached = localStorage.getItem('safestay_preferred_language');
+      if (cached) document.getElementById('current-language').textContent = cached;
+    }
+  }
+
+  async function loadProfile() {
+    try {
+      const response = await safeStayAPI.getUserProfile();
+      const profile = response.user || response;
+      renderProfile(profile);
+    } catch (err) {
+      console.warn('Could not load profile:', err.message);
+      document.getElementById('profile-name').textContent = 'SafeStay User';
+      document.getElementById('profile-email').textContent = 'Sign in to view your profile';
+      const cached = localStorage.getItem('safestay_preferred_language');
+      if (cached) document.getElementById('current-language').textContent = cached;
+    }
+  }
+
+  async function loadCaseHistory() {
+    const list = document.getElementById('history-list');
+    const empty = document.getElementById('history-empty');
+    try {
+      const response = await safeStayAPI.getAllCases();
+      const cases = (response.cases || response || []).slice(0, 3);
+      if (!cases.length) {
+        empty.style.display = 'block';
+        return;
+      }
+      list.innerHTML = cases.map(c => {
+        const id = c.case_id || c.id;
+        const type = c.detected_case || c.case_title || 'Case';
+        return `
+          <a class="history-card" href="case-details.html?case_id=${encodeURIComponent(id)}">
+            <div class="history-icon">${iconFor(c.detected_case)}</div>
+            <div style="flex:1">
+              <div class="history-name">${type}</div>
+              <div class="history-meta">${formatDate(c)}</div>
+            </div>
+            <div class="history-status ${statusClass(c.case_status)}">${(c.case_status || 'In Progress')}</div>
+          </a>
+        `;
+      }).join('');
+    } catch (err) {
+      console.warn('Could not load case history:', err.message);
+      empty.textContent = 'Could not load case history.';
+      empty.style.display = 'block';
+    }
+  }
+
+  function setupMenu() {
+    document.getElementById('row-logout').addEventListener('click', (e) => {
+      e.preventDefault();
+      safeStayAPI.clearToken();
+      location.href = 'index.html';
+    });
+    // Placeholder rows without dedicated pages yet — keep the user on
+    // profile.html rather than sending them to a broken link.
+    ['row-personal', 'row-notifications', 'row-privacy', 'row-help'].forEach(id => {
+      document.getElementById(id).addEventListener('click', (e) => e.preventDefault());
+    });
+  }
+
+  async function init() {
+    if (!safeStayAPI.token) {
+      location.href = 'login.html';
+      return;
+    }
+    setupMenu();
+    await loadProfile();
+    loadCaseHistory();
+  }
+
+  init();
+</script>
+</body>
+</html>

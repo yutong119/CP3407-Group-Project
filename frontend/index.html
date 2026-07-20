@@ -237,7 +237,15 @@
     SafeStay
   </div>
   <div class="nav-right">
-    <div class="nav-lang">🌐 English ▾</div>
+    <div class="nav-lang" id="nav-lang" onclick="location.href='language.html?return_to=index.html'">🌐 <span id="nav-lang-text">English</span> ▾</div>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('safestay_preferred_language');
+      if (saved) document.getElementById('nav-lang-text').textContent = saved;
+    })();
+  </script>
+    <button class="btn-nav outline" id="nav-history-btn" style="display:none" onclick="location.href='history.html'">My Cases</button>
+    <button class="btn-nav outline" id="nav-profile-btn" style="display:none" onclick="location.href='profile.html'">Profile</button>
     <button class="btn-nav outline" id="nav-login-btn" onclick="location.href='login.html'">Log in</button>
     <button class="btn-nav primary" id="nav-register-btn" onclick="location.href='login.html'">Register</button>
   </div>
@@ -277,7 +285,7 @@
 <div class="section-wrap">
   <div class="section-header">
     <h2>Common Cases</h2>
-    <a href="#">View all cases →</a>
+    <a href="history.html">View all cases →</a>
   </div>
   <div class="cases-grid">
     <a class="case-card" href="describe.html?case_type=Theft">
@@ -316,6 +324,9 @@
     if (safeStayAPI.token) {
       const loginBtn    = document.getElementById('nav-login-btn');
       const registerBtn = document.getElementById('nav-register-btn');
+
+      document.getElementById('nav-history-btn').style.display = 'inline-flex';
+      document.getElementById('nav-profile-btn').style.display = 'inline-flex';
 
       loginBtn.textContent = 'Log out';
       loginBtn.onclick = () => {

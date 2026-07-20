@@ -226,12 +226,18 @@
     <div class="shield">🛡</div>
     SafeStay
   </a>
-  <div class="nav-lang">🌐 English ▾</div>
+  <div class="nav-lang" id="nav-lang" onclick="location.href='language.html?return_to=' + encodeURIComponent('result.html' + window.location.search)">🌐 <span id="nav-lang-text">English</span> ▾</div>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('safestay_preferred_language');
+      if (saved) document.getElementById('nav-lang-text').textContent = saved;
+    })();
+  </script>
 </nav>
 
 <div class="result-wrap">
 
-  <a class="back-link" href="4_describe.html">← Edit description</a>
+  <a class="back-link" href="describe.html">← Edit description</a>
 
   <h1>Analysis Result</h1>
 
@@ -286,6 +292,8 @@
     <button class="btn-result primary" id="contacts-btn">📞 View Contacts</button>
   </div>
 
+  <a class="btn-back" href="#" id="case-details-btn" style="margin-bottom:10px">📁 View Full Case Details</a>
+
   <a class="btn-back" href="index.html">← Back to Home</a>
 
 </div>
@@ -301,6 +309,10 @@
   });
   document.getElementById('contacts-btn').addEventListener('click', () => {
     window.location.href = 'contacts.html' + query;
+  });
+  document.getElementById('case-details-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'case-details.html' + query;
   });
 
   function renderAnalysis(caseData) {

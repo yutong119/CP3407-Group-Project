@@ -216,7 +216,13 @@
     <div class="shield">🛡</div>
     SafeStay
   </a>
-  <div class="nav-lang">🌐 English ▾</div>
+  <div class="nav-lang" id="nav-lang" onclick="location.href='language.html?return_to=login.html'">🌐 <span id="nav-lang-text">English</span> ▾</div>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('safestay_preferred_language');
+      if (saved) document.getElementById('nav-lang-text').textContent = saved;
+    })();
+  </script>
 </nav>
 
 <div class="auth-wrap">
