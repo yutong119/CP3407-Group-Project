@@ -164,13 +164,49 @@ VALUES
 -- Sample checklist items
 INSERT INTO checklist_items (case_id, item_name, is_completed)
 VALUES
+-- Case 1: Theft
 (1, 'Photos of the scene', TRUE),
 (1, 'Receipts / Proof of ownership', TRUE),
 (1, 'CCTV Footage', TRUE),
 (1, 'Witness Information', FALSE),
 (1, 'Police Report / Case Number', FALSE),
 (1, 'Other Relevant Documents', FALSE),
-(1, 'Anything else helpful', FALSE);
+(1, 'Anything else helpful', FALSE),
+
+-- Case 2: Lost Passport
+(2, 'Passport photo or copy', TRUE),
+(2, 'Police report', TRUE),
+(2, 'Embassy appointment details', FALSE),
+(2, 'Travel itinerary', TRUE),
+(2, 'Identification documents', TRUE),
+
+-- Case 3: Scam / Online Fraud
+(3, 'Screenshots of messages', TRUE),
+(3, 'Payment proof', TRUE),
+(3, 'Scammer contact details', TRUE),
+(3, 'Bank statement', FALSE),
+(3, 'Police report', TRUE),
+
+-- Case 4: Rental Dispute
+(4, 'Rental contract', TRUE),
+(4, 'Payment records', TRUE),
+(4, 'Chat history with landlord', TRUE),
+(4, 'Property photos', FALSE),
+(4, 'Deposit receipt', TRUE),
+
+-- Case 5: Medical Emergency
+(5, 'Medical report', TRUE),
+(5, 'Hospital bill or receipt', TRUE),
+(5, 'Insurance document', FALSE),
+(5, 'Doctor prescription', TRUE),
+(5, 'Emergency contact information', TRUE),
+
+-- Case 6: Other Issues
+(6, 'Incident description', TRUE),
+(6, 'Supporting evidence', TRUE),
+(6, 'Witness information', FALSE),
+(6, 'Relevant documents', FALSE),
+(6, 'University support request', TRUE);
 
 -- Sample checklist templates 
 INSERT INTO checklist_templates (category_id, item_name, description, is_required)
