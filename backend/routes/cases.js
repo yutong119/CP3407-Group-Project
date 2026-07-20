@@ -1,6 +1,9 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { verifyToken } = require('../middleware/auth');
+const { generateDraftMessage } = require('../services/analysisService');
+const { getGuidanceSteps, getChecklistTemplates, getAuthorityContacts } = require('../services/templateService');
+const { createChecklistItemsForCase } = require('../services/checklistService');
 
 const router = express.Router();
 
@@ -13,9 +16,9 @@ router.get('/', verifyToken, async (req, res) => {
 
     const [cases] = await connection.query(
       `SELECT 
-        sc.case_id, sc.case_title, sc.description, sc.location, 
-        sc.case_status, sc.urgency_level, sc.detected_case, 
-        sc.probability, sc.created_at, cc.category_name
+        sc.case_id, sc.case_title, sc.description, sc.location,
+        sc.case_status, sc.urgency_level, sc.detected_case,
+        sc.probability, sc.created_at, sc.category_id, cc.category_name
        FROM student_cases sc
        LEFT JOIN case_categories cc ON sc.category_id = cc.category_id
        WHERE sc.user_id = ?
@@ -35,6 +38,65 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+// Update checklist completion status
+router.put('/:case_id/checklist', verifyToken, async (req, res) => {
+  try {
+    const { case_id } = req.params;
+    const { user_id } = req.user;
+    const items = req.body.items;
+    const pool = req.pool;
+    const connection = await pool.getConnection();
+
+    if (!Array.isArray(items)) {
+      connection.release();
+      return res.status(400).json({ success: false, message: 'items must be an array' });
+    }
+
+    const [cases] = await connection.query(
+      'SELECT * FROM student_cases WHERE case_id = ? AND user_id = ?',
+      [case_id, user_id]
+    );
+
+    if (cases.length === 0) {
+      connection.release();
+      return res.status(404).json({ success: false, message: 'Case not found' });
+    }
+
+    let updatedCount = 0;
+
+    for (const item of items) {
+      if (item.checklist_id === undefined || item.is_completed === undefined) {
+        connection.release();
+        return res.status(400).json({ success: false, message: 'Each item must include checklist_id and is_completed' });
+      }
+
+      const isCompleted = item.is_completed === true || item.is_completed === 1 ? 1 : 0;
+      const [result] = await connection.query(
+        'UPDATE checklist_items SET is_completed = ? WHERE checklist_id = ? AND case_id = ?',
+        [isCompleted, item.checklist_id, case_id]
+      );
+
+      if (result.affectedRows > 0) {
+        updatedCount += 1;
+      }
+    }
+
+    connection.release();
+
+    if (updatedCount === 0) {
+      return res.status(400).json({ success: false, message: 'No valid checklist items were updated for this case' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Checklist updated successfully'
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+});
+
 // Get single case
 router.get('/:case_id', verifyToken, async (req, res) => {
   try {
@@ -44,8 +106,10 @@ router.get('/:case_id', verifyToken, async (req, res) => {
     const connection = await pool.getConnection();
 
     const [cases] = await connection.query(
-      `SELECT * FROM student_cases 
-       WHERE case_id = ? AND user_id = ?`,
+      `SELECT sc.*, cc.category_name
+       FROM student_cases sc
+       LEFT JOIN case_categories cc ON sc.category_id = cc.category_id
+       WHERE sc.case_id = ? AND sc.user_id = ?`,
       [case_id, user_id]
     );
 
@@ -54,25 +118,37 @@ router.get('/:case_id', verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Case not found' });
     }
 
-    // Get evidence files
+    const caseData = cases[0];
+
     const [evidence] = await connection.query(
       'SELECT * FROM evidence_files WHERE case_id = ?',
       [case_id]
     );
 
-    // Get checklist items
     const [checklist] = await connection.query(
-      'SELECT * FROM checklist_items WHERE case_id = ?',
+      'SELECT * FROM checklist_items WHERE case_id = ? ORDER BY checklist_id',
       [case_id]
     );
+
+    const guidanceSteps = await getGuidanceSteps(connection, caseData.category_id);
+    const checklistTemplates = await getChecklistTemplates(connection, caseData.category_id);
+    const recommendedContacts = await getAuthorityContacts(connection, caseData.category_id);
+
+    const analysisData = {
+      recommended_actions: guidanceSteps,
+      evidence_checklist: checklistTemplates,
+      recommended_contacts: recommendedContacts,
+      draft_message: generateDraftMessage(caseData, caseData.description, caseData.location)
+    };
 
     connection.release();
 
     res.json({
       success: true,
-      case: cases[0],
+      case: caseData,
       evidence,
-      checklist
+      checklist,
+      analysis_data: analysisData
     });
   } catch (error) {
     console.error(error);
@@ -105,12 +181,15 @@ router.post('/', verifyToken, [
       [user_id, category_id, case_title, description, location, urgency_level, detected_case, probability]
     );
 
+    const newCaseId = result.insertId;
+    await createChecklistItemsForCase(connection, newCaseId, category_id);
+
     connection.release();
 
     res.status(201).json({
       success: true,
       message: 'Case created successfully',
-      case_id: result.insertId
+      case_id: newCaseId
     });
   } catch (error) {
     console.error(error);
@@ -127,7 +206,6 @@ router.put('/:case_id', verifyToken, async (req, res) => {
     const pool = req.pool;
     const connection = await pool.getConnection();
 
-    // Verify ownership
     const [cases] = await connection.query(
       'SELECT * FROM student_cases WHERE case_id = ? AND user_id = ?',
       [case_id, user_id]
@@ -190,7 +268,6 @@ router.delete('/:case_id', verifyToken, async (req, res) => {
     const pool = req.pool;
     const connection = await pool.getConnection();
 
-    // Verify ownership
     const [cases] = await connection.query(
       'SELECT * FROM student_cases WHERE case_id = ? AND user_id = ?',
       [case_id, user_id]
@@ -201,7 +278,6 @@ router.delete('/:case_id', verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Case not found' });
     }
 
-    // Delete related records
     await connection.query('DELETE FROM evidence_files WHERE case_id = ?', [case_id]);
     await connection.query('DELETE FROM checklist_items WHERE case_id = ?', [case_id]);
     await connection.query('DELETE FROM student_cases WHERE case_id = ?', [case_id]);
