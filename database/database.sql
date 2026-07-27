@@ -100,6 +100,8 @@ CREATE TABLE authority_contacts (
 INSERT INTO users (full_name, email, password_hash, preferred_language)
 VALUES
 ('Yutong Ji', 'yutong@example.com', 'hashed_password_here', 'English'),
+('Li Wei','liwei@example.com','hashed_password','Chinese'),
+('Sin Min', 'sin@example.com', 'hashed_password_here', 'Burmese'),
 ('Nang Laung Phoung', 'nang@example.com', 'hashed_password_here', 'English');
 
 -- Sample case categories
@@ -136,22 +138,77 @@ VALUES
 
 
 -- Sample evidence files
-INSERT INTO evidence_files 
+INSERT INTO evidence_files
 (case_id, file_name, file_type, file_path, description)
 VALUES
 (1, 'photo_scene.jpg', 'image/jpeg', '/uploads/photo_scene.jpg', 'Photo of the place where the bag was stolen.'),
-(1, 'receipt.pdf', 'application/pdf', '/uploads/receipt.pdf', 'Proof of ownership for the stolen item.');
+(1, 'receipt.pdf', 'application/pdf', '/uploads/receipt.pdf', 'Proof of ownership for the stolen item.'),
+
+(2, 'passport_copy.jpg', 'image/jpeg', '/uploads/passport_copy.jpg', 'Photo or scanned copy of the lost passport.'),
+(2, 'police_report_lost_passport.pdf', 'application/pdf', '/uploads/police_report_lost_passport.pdf', 'Police report made after the passport was lost.'),
+(2, 'flight_itinerary.pdf', 'application/pdf', '/uploads/flight_itinerary.pdf', 'Flight itinerary showing upcoming travel details.'),
+
+(3, 'scam_chat_screenshot.png', 'image/png', '/uploads/scam_chat_screenshot.png', 'Screenshot of the conversation with the suspected scammer.'),
+(3, 'payment_receipt.pdf', 'application/pdf', '/uploads/payment_receipt.pdf', 'Proof of payment made to the suspected scammer.'),
+(3, 'seller_profile.png', 'image/png', '/uploads/seller_profile.png', 'Screenshot of the seller profile and account information.'),
+
+(4, 'rental_contract.pdf', 'application/pdf', '/uploads/rental_contract.pdf', 'Copy of the tenancy agreement signed by the student and landlord.'),
+(4, 'deposit_payment_receipt.pdf', 'application/pdf', '/uploads/deposit_payment_receipt.pdf', 'Receipt showing payment of the rental deposit.'),
+(4, 'landlord_chat_history.png', 'image/png', '/uploads/landlord_chat_history.png', 'Screenshot of messages exchanged with the landlord.'),
+
+(5, 'medical_report.pdf', 'application/pdf', '/uploads/medical_report.pdf', 'Medical report issued by the hospital.'),
+(5, 'hospital_bill.pdf', 'application/pdf', '/uploads/hospital_bill.pdf', 'Hospital bill and treatment receipt.'),
+(5, 'medicine_prescription.jpg', 'image/jpeg', '/uploads/medicine_prescription.jpg', 'Photo of the medicine prescription provided by the doctor.'),
+
+(6, 'incident_notes.txt', 'text/plain', '/uploads/incident_notes.txt', 'Written notes describing the personal safety concern.'),
+(6, 'supporting_photo.jpg', 'image/jpeg', '/uploads/supporting_photo.jpg', 'Supporting photo related to the reported issue.');
 
 -- Sample checklist items
 INSERT INTO checklist_items (case_id, item_name, is_completed)
 VALUES
+-- Case 1: Theft
 (1, 'Photos of the scene', TRUE),
 (1, 'Receipts / Proof of ownership', TRUE),
 (1, 'CCTV Footage', TRUE),
 (1, 'Witness Information', FALSE),
 (1, 'Police Report / Case Number', FALSE),
 (1, 'Other Relevant Documents', FALSE),
-(1, 'Anything else helpful', FALSE);
+(1, 'Anything else helpful', FALSE),
+
+-- Case 2: Lost Passport
+(2, 'Passport photo or copy', TRUE),
+(2, 'Police report', TRUE),
+(2, 'Embassy appointment details', FALSE),
+(2, 'Travel itinerary', TRUE),
+(2, 'Identification documents', TRUE),
+
+-- Case 3: Scam / Online Fraud
+(3, 'Screenshots of messages', TRUE),
+(3, 'Payment proof', TRUE),
+(3, 'Scammer contact details', TRUE),
+(3, 'Bank statement', FALSE),
+(3, 'Police report', TRUE),
+
+-- Case 4: Rental Dispute
+(4, 'Rental contract', TRUE),
+(4, 'Payment records', TRUE),
+(4, 'Chat history with landlord', TRUE),
+(4, 'Property photos', FALSE),
+(4, 'Deposit receipt', TRUE),
+
+-- Case 5: Medical Emergency
+(5, 'Medical report', TRUE),
+(5, 'Hospital bill or receipt', TRUE),
+(5, 'Insurance document', FALSE),
+(5, 'Doctor prescription', TRUE),
+(5, 'Emergency contact information', TRUE),
+
+-- Case 6: Other Issues
+(6, 'Incident description', TRUE),
+(6, 'Supporting evidence', TRUE),
+(6, 'Witness information', FALSE),
+(6, 'Relevant documents', FALSE),
+(6, 'University support request', TRUE);
 
 -- Sample checklist templates 
 INSERT INTO checklist_templates (category_id, item_name, description, is_required)
@@ -162,31 +219,44 @@ VALUES
 (1, 'CCTV Footage', 'Check whether CCTV footage is available near the incident location.', FALSE),
 (1, 'Witness Information', 'Add witness name or contact details if anyone saw the incident.', FALSE),
 (1, 'Police Report / Case Number', 'Add the police report number after reporting the theft.', TRUE),
+(1, 'Bank card cancellation confirmation', 'Provide proof that your lost bank cards have been cancelled if applicable.', FALSE),
+(1, 'Insurance claim documents', 'Upload insurance claim documents if the stolen item is insured.', FALSE),
 
 -- Lost Passport
 (2, 'Passport photo or copy', 'Upload a photo or scanned copy of your passport if available.', TRUE),
 (2, 'Police report', 'Upload the police report for the lost passport.', TRUE),
 (2, 'Embassy appointment details', 'Record your embassy appointment or contact details.', TRUE),
 (2, 'Travel itinerary', 'Upload flight tickets or travel documents if affected.', FALSE),
+(2, 'Identification document', 'Upload another identification document such as a student ID or NRIC copy.', TRUE),
+(2, 'Embassy payment receipt', 'Upload the receipt for passport replacement if available.', FALSE),
+
 
 -- Scam / Online Fraud
 (3, 'Screenshots of messages', 'Upload screenshots of chat messages, emails, or scam websites.', TRUE),
 (3, 'Payment proof', 'Upload bank transfer receipts or payment screenshots.', TRUE),
 (3, 'Scammer contact details', 'Record phone number, email, website, or social media account.', TRUE),
+(3, 'Bank statement', 'Upload a bank statement showing the fraudulent transaction.', FALSE),
+(3, 'Police report', 'Upload the police report related to the scam.', TRUE),
 
 -- Rental Dispute
 (4, 'Rental contract', 'Upload your rental agreement or tenancy contract.', TRUE),
 (4, 'Payment records', 'Upload rent payment receipts or bank transfer records.', TRUE),
 (4, 'Chat history with landlord', 'Upload screenshots of communication with landlord or agent.', FALSE),
+(4, 'Property photos', 'Upload photos showing the condition of the rental property.', FALSE),
+(4, 'Deposit refund request', 'Upload emails or letters requesting the return of your deposit.', FALSE),
 
 -- Medical Emergency
 (5, 'Medical report', 'Upload medical report or consultation document if available.', TRUE),
 (5, 'Hospital bill or receipt', 'Upload medical bill or payment receipt.', FALSE),
 (5, 'Insurance document', 'Upload insurance information if available.', FALSE),
+(5, 'Doctor prescription', 'Upload the prescription issued by the attending doctor.', FALSE),
+(5, 'Emergency contact information', 'Provide emergency contact details if available.', TRUE),
 
 -- Other Issues
 (6, 'Incident description', 'Write a clear description of what happened.', TRUE),
-(6, 'Supporting evidence', 'Upload any useful documents, photos, or screenshots.', FALSE);
+(6, 'Supporting evidence', 'Upload any useful documents, photos, or screenshots.', FALSE),
+(6, 'Witness information', 'Provide contact details of any witnesses if applicable.', FALSE),
+(6, 'University support request', 'Record any request submitted to the university support office.', FALSE);
 
 -- Sample guidance steps 
 INSERT INTO guidance_steps (category_id, step_order, step_title, step_description)
@@ -195,31 +265,44 @@ VALUES
 (1, 1, 'Stay safe', 'Move to a safe location and avoid confronting the suspect.'),
 (1, 2, 'Collect evidence', 'Prepare photos, receipts, witness details, and CCTV information if available.'),
 (1, 3, 'Report to police', 'Make a police report and keep the case number.'),
+(1, 4, 'Protect your accounts', 'Cancel or temporarily block any stolen bank cards, mobile payment accounts, or SIM cards.'),
+(1, 5, 'Inform relevant organisations', 'Contact your university, insurance provider, or transport operator if the stolen item is related to them.'),
 
 -- Lost Passport
 (2, 1, 'Report the loss', 'Report the lost passport to the police as soon as possible.'),
 (2, 2, 'Contact embassy', 'Contact your embassy or high commission for passport replacement guidance.'),
 (2, 3, 'Prepare documents', 'Prepare identification, passport copy, police report, and travel itinerary.'),
+(2, 4, 'Check travel requirements', 'Confirm whether your upcoming travel plans need to be changed while waiting for a replacement passport.'),
+(2, 5, 'Keep replacement records', 'Save your embassy appointment details, payment receipts, and replacement passport documents.'),
 
 -- Scam / Online Fraud
 (3, 1, 'Stop communication', 'Do not send more money or personal information to the scammer.'),
 (3, 2, 'Save evidence', 'Save screenshots, payment proof, phone numbers, emails, and website links.'),
 (3, 3, 'Report the scam', 'Report the scam to the police or relevant online fraud reporting channel.'),
+(3, 4, 'Contact your bank', 'Ask your bank to block the transaction, secure your account, or investigate the payment.'),
+(3, 5, 'Secure your online accounts', 'Change affected passwords and enable two-factor authentication on important accounts.'),
 
 -- Rental Dispute
 (4, 1, 'Review your contract', 'Check your rental agreement for deposit, rent, and termination terms.'),
 (4, 2, 'Collect records', 'Save payment receipts, messages, emails, and photos of the property.'),
 (4, 3, 'Seek support', 'Contact university support, legal aid, or a tenant support service if needed.'),
+(4, 4, 'Contact the landlord formally', 'Send a clear written request explaining the issue and keep a copy of the communication.'),
+(4, 5, 'Consider mediation or legal advice', 'Seek help from a mediation service, university support team, or legal aid organisation.'),
+
 
 -- Medical Emergency
 (5, 1, 'Call emergency help', 'Call emergency medical services if the situation is urgent.'),
 (5, 2, 'Visit hospital or clinic', 'Go to the nearest hospital or clinic for medical attention.'),
 (5, 3, 'Keep medical records', 'Keep medical reports, bills, receipts, and insurance documents.'),
+(5, 4, 'Inform your emergency contact', 'Tell a trusted person, family member, or university support officer about the situation.'),
+(5, 5, 'Follow the treatment plan', 'Take prescribed medicine, attend follow-up appointments, and keep all medical documents.'),
 
 -- Other Issues
 (6, 1, 'Describe the issue clearly', 'Write down what happened, when it happened, and where it happened.'),
 (6, 2, 'Collect supporting evidence', 'Upload photos, screenshots, documents, or witness details.'),
-(6, 3, 'Ask for support', 'Contact university support or relevant authority for advice.');
+(6, 3, 'Ask for support', 'Contact university support or relevant authority for advice.'),
+(6, 4, 'Identify the correct authority', 'Determine whether the issue should be handled by the police, university, landlord, hospital, or another organisation.'),
+(6, 5, 'Keep a record of actions', 'Record who you contacted, what advice was provided, and any case or reference numbers.');
 
 -- Sample authority contacts
 INSERT INTO authority_contacts 
