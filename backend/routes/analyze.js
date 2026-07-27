@@ -1,5 +1,5 @@
 const express = require('express');
-const { detectIncident, generateDraftMessage } = require('../services/analysisService');
+const { analyzeIncident, generateDraftMessage } = require('../services/analysisService');
 const { getGuidanceSteps, getChecklistTemplates, getAuthorityContacts } = require('../services/templateService');
 
 const router = express.Router();
@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     const pool = req.pool;
     connection = await pool.getConnection();
 
-    const analysis = detectIncident(description);
+    const analysis = await analyzeIncident(description);
 
     const guidanceSteps = await getGuidanceSteps(connection, analysis.category_id);
     const checklist = await getChecklistTemplates(connection, analysis.category_id);
