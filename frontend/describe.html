@@ -381,7 +381,9 @@
       const locationText = document.getElementById('location-text').textContent;
 
       // 1. Run AI analysis on the description + location
-      const analysis = await safeStayAPI.analyzeCase(description, locationText);
+      const analyzeResponse = await safeStayAPI.analyzeCase(description, locationText);
+      // analyzeCase returns { success, analysis: {...} } — unwrap it
+      const analysis = analyzeResponse.analysis || analyzeResponse;
 
       // 2. Persist the full analysis so pages 5-7 (result/evidence/contacts)
       //    can read detected_case, urgency_level, probability, recommended_actions,
@@ -391,9 +393,11 @@
       btn.textContent = 'Submitting...';
       const caseTitle = description.length > 60 ? description.slice(0, 60) + '...' : description;
 
-      // 3. Create the case using the real analysis results instead of nulls
+      // 3. Create the case using the real analysis results instead of nulls.
+      // The category should come from the analysis itself now that the
+      // Select Case page has been removed; selectedCategoryId is just a fallback.
       const created = await safeStayAPI.createCase(
-        selectedCategoryId,
+        analysis.category_id || selectedCategoryId || 6,
         caseTitle,
         description,
         locationText,

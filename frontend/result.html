@@ -322,13 +322,29 @@
   }
 
   function renderAnalysis(caseData) {
-    if (caseData.detected_case) {
-      document.getElementById('detected-type').textContent = caseData.detected_case;
-      const key = caseData.detected_case.toLowerCase();
+    // Log the raw shape once so it's easy to see in devtools exactly what the backend sent
+    console.log('SafeStay: case data received', caseData);
+
+    // Tolerate a few likely key-name variants in case the backend doesn't use snake_case
+    const detectedCase =
+      caseData.detected_case ?? caseData.detectedCase ?? caseData.case_type ??
+      caseData.predicted_case ?? (caseData.analysis && caseData.analysis.detected_case);
+
+    const probability =
+      caseData.probability ?? caseData.confidence ??
+      (caseData.analysis && caseData.analysis.probability);
+
+    if (detectedCase) {
+      document.getElementById('detected-type').textContent = detectedCase;
+      const key = String(detectedCase).toLowerCase();
       document.getElementById('detected-icon').textContent = CASE_ICONS[key] || CASE_ICONS.default;
+    } else {
+      document.getElementById('detected-type').textContent = 'Unknown';
+      showError('The server responded, but no detected case type was included in the data. Check the console for the raw response.');
     }
-    if (caseData.probability != null) {
-      document.getElementById('detected-prob').textContent = `Probability: ${caseData.probability}%`;
+
+    if (probability != null) {
+      document.getElementById('detected-prob').textContent = `Probability: ${probability}%`;
     } else {
       document.getElementById('detected-prob').textContent = '';
     }
@@ -359,12 +375,17 @@
       : GENERIC_ACTIONS;
 
     const actionsCard = document.querySelector('.actions-card');
-    const items = actions.map((text, i) => `
+    const items = actions.map((action, i) => {
+      const text = typeof action === 'string'
+        ? action
+        : (action.step_description || action.step_title || action.item_name || 'Recommended step');
+      return `
       <div class="action-item">
         <div class="action-num">${i + 1}</div>
         <div class="action-text">${text}</div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     actionsCard.innerHTML = '<h3>Recommended Actions</h3>' + items;
   }
 
@@ -394,7 +415,13 @@
 
     try {
       const response = await safeStayAPI.getCase(caseId);
-      const caseData = response.case || response; // tolerate either response shape
+      // getCase returns { success, case: {...}, analysis_data: { recommended_actions, ... } }
+      // Merge both so renderAnalysis can read detected_case/urgency_level from `case`
+      // and recommended_actions/evidence_checklist/etc from `analysis_data` in one object.
+      const caseData = {
+        ...(response.case || response || {}),
+        ...(response.analysis_data || {})
+      };
       renderAnalysis(caseData);
     } catch (err) {
       console.error('Failed to load case result:', err);
