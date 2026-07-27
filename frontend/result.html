@@ -245,44 +245,31 @@
   <div class="detected-card">
     <div>
       <div class="detected-label">Detected Case</div>
-      <div class="detected-type" id="detected-type">Theft</div>
-      <div class="detected-prob" id="detected-prob">Probability: 92%</div>
+      <div class="detected-type" id="detected-type">Loading…</div>
+      <div class="detected-prob" id="detected-prob">&nbsp;</div>
     </div>
-    <div class="detected-icon">🛍️</div>
+    <div class="detected-icon" id="detected-icon">⏳</div>
   </div>
 
   <!-- Urgency Level -->
-  <div class="urgency-card high" id="urgency-card">
-    <div class="urgency-icon">🚨</div>
+  <div class="urgency-card medium" id="urgency-card">
+    <div class="urgency-icon">⏳</div>
     <div>
       <div class="urgency-title">Urgency Level</div>
-      <span class="urgency-badge high" id="urgency-badge">⚠ High</span>
-      <p class="urgency-desc" id="urgency-desc">This situation requires immediate attention. Please act on the steps below as soon as possible.</p>
+      <span class="urgency-badge medium" id="urgency-badge">Loading…</span>
+      <p class="urgency-desc" id="urgency-desc">Fetching the analysis for this case…</p>
     </div>
   </div>
+
+  <!-- Error banner (hidden unless something goes wrong) -->
+  <div id="error-banner" style="display:none; background:var(--red-light); border:1px solid #FECACA; color:var(--red); border-radius:10px; padding:12px 16px; font-size:13px; margin-bottom:14px;"></div>
 
   <!-- Recommended Actions -->
   <div class="actions-card">
     <h3>Recommended Actions</h3>
     <div class="action-item">
-      <div class="action-num">1</div>
-      <div class="action-text">Contact the police immediately and file a report</div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">2</div>
-      <div class="action-text">Block your bank cards and accounts right away</div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">3</div>
-      <div class="action-text">Gather all possible evidence from the scene</div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">4</div>
-      <div class="action-text">Check CCTV footage around the area if accessible</div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">5</div>
-      <div class="action-text">Report the incident to your university support office if needed</div>
+      <div class="action-num">•</div>
+      <div class="action-text">Loading recommended actions…</div>
     </div>
   </div>
 
@@ -315,12 +302,35 @@
     window.location.href = 'case-details.html' + query;
   });
 
+  const GENERIC_ACTIONS = [
+    'Contact the police or campus security if you feel unsafe',
+    'Write down everything you remember while it is fresh',
+    'Gather any evidence related to the incident',
+    'Reach out to a trusted contact or support office',
+    'Follow up using the checklist and contacts for this case type'
+  ];
+
+  const CASE_ICONS = {
+    theft: '🛍️', harassment: '⚠️', assault: '🚨', fraud: '💳',
+    accident: '🚑', fire: '🔥', default: '📄'
+  };
+
+  function showError(message) {
+    const banner = document.getElementById('error-banner');
+    banner.textContent = message;
+    banner.style.display = 'block';
+  }
+
   function renderAnalysis(caseData) {
     if (caseData.detected_case) {
       document.getElementById('detected-type').textContent = caseData.detected_case;
+      const key = caseData.detected_case.toLowerCase();
+      document.getElementById('detected-icon').textContent = CASE_ICONS[key] || CASE_ICONS.default;
     }
     if (caseData.probability != null) {
       document.getElementById('detected-prob').textContent = `Probability: ${caseData.probability}%`;
+    } else {
+      document.getElementById('detected-prob').textContent = '';
     }
 
     const urgency = (caseData.urgency_level || 'medium').toLowerCase();
@@ -342,30 +352,45 @@
       desc.textContent  = 'This situation should be addressed soon. Review the recommended steps below.';
     }
 
-    // Recommended actions — replace the static list if the analysis provided one
-    if (Array.isArray(caseData.recommended_actions) && caseData.recommended_actions.length) {
-      const actionsCard = document.querySelector('.actions-card');
-      const items = caseData.recommended_actions.map((text, i) => `
-        <div class="action-item">
-          <div class="action-num">${i + 1}</div>
-          <div class="action-text">${text}</div>
-        </div>
-      `).join('');
-      actionsCard.innerHTML = '<h3>Recommended Actions</h3>' + items;
-    }
+    // Recommended actions — always replace the loading/placeholder list with real data,
+    // falling back to a generic (non-case-specific) list only if the backend gave none.
+    const actions = (Array.isArray(caseData.recommended_actions) && caseData.recommended_actions.length)
+      ? caseData.recommended_actions
+      : GENERIC_ACTIONS;
+
+    const actionsCard = document.querySelector('.actions-card');
+    const items = actions.map((text, i) => `
+      <div class="action-item">
+        <div class="action-num">${i + 1}</div>
+        <div class="action-text">${text}</div>
+      </div>
+    `).join('');
+    actionsCard.innerHTML = '<h3>Recommended Actions</h3>' + items;
   }
 
   async function loadCaseResult() {
     // Prefer the fresh analysis stored right after describe.html called /api/analyze
     const cached = sessionStorage.getItem('safestay_analysis');
+    let renderedFromCache = false;
     if (cached) {
-      try { renderAnalysis(JSON.parse(cached)); } catch (e) { console.warn('Bad cached analysis:', e); }
+      try {
+        renderAnalysis(JSON.parse(cached));
+        renderedFromCache = true;
+      } catch (e) {
+        console.warn('Bad cached analysis:', e);
+      }
     }
 
     // Then sync with the backend — authoritative, and needed for direct/shared links
     const params = new URLSearchParams(window.location.search);
     const caseId = params.get('case_id');
-    if (!caseId) return;
+
+    if (!caseId) {
+      if (!renderedFromCache) {
+        showError('No case was specified, so no analysis could be loaded. Please start again from the description page.');
+      }
+      return;
+    }
 
     try {
       const response = await safeStayAPI.getCase(caseId);
@@ -373,6 +398,9 @@
       renderAnalysis(caseData);
     } catch (err) {
       console.error('Failed to load case result:', err);
+      if (!renderedFromCache) {
+        showError(`Couldn't load this case from the server (${err.message}). Please try again.`);
+      }
     }
   }
   document.addEventListener('DOMContentLoaded', loadCaseResult);
