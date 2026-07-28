@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Evidence Checklist – SafeStay</title>
+  <title data-i18n="pageTitles.evidence">Evidence Checklist – SafeStay</title>
+  <script src="i18n.js"></script>
   <script src="api.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -191,7 +192,7 @@
     <a href="index.html" class="appbar-icon" style="text-decoration:none">🛡️</a>
     <div>
       <div class="appbar-title">SafeStay</div>
-      <div class="appbar-sub" id="case-subtitle">Theft Case · THF-2024-00023</div>
+      <div class="appbar-sub" id="case-subtitle" data-i18n="common.loading">Theft Case · THF-2024-00023</div>
     </div>
     <div class="badge-high" id="urgency-badge">HIGH</div>
   </div>
@@ -200,8 +201,8 @@
   <div class="page-header">
     <div class="header-row">
       <div>
-        <h2 class="page-title" id="page-title">Theft Evidence Checklist</h2>
-        <p class="page-sub">Collecting strong evidence can increase the chance of recovery.</p>
+        <h2 class="page-title" id="page-title" data-i18n="evidence.pageTitle">Theft Evidence Checklist</h2>
+        <p class="page-sub" data-i18n="evidence.pageSub">Collecting strong evidence can increase the chance of recovery.</p>
       </div>
       <div>
         <div class="count-label"><span id="count-done">3</span> / <span id="count-total">7</span></div>
@@ -213,7 +214,7 @@
         <div class="progress-fill" id="progress-fill" style="width: 43%"></div>
       </div>
       <div class="progress-labels">
-        <span class="progress-text">Progress</span>
+        <span class="progress-text" data-i18n="evidence.progress">Progress</span>
         <span class="progress-pct" id="progress-pct">43%</span>
       </div>
     </div>
@@ -225,10 +226,10 @@
   <!-- AI Tip -->
   <div class="ai-tip-box">
     <div class="ai-tip-row">
-      <span class="ai-tip-title">✨ AI Evidence Tip</span>
-      <button class="btn-get-tip" id="btn-tip" onclick="getAITip()">Get Tip</button>
+      <span class="ai-tip-title" data-i18n="evidence.aiTipTitle">✨ AI Evidence Tip</span>
+      <button class="btn-get-tip" id="btn-tip" onclick="getAITip()" data-i18n="evidence.getTip">Get Tip</button>
     </div>
-    <div class="ai-tip-placeholder" id="tip-placeholder">
+    <div class="ai-tip-placeholder" id="tip-placeholder" data-i18n="evidence.tipPlaceholder">
       Tap "Get Tip" for personalised advice based on your checklist progress.
     </div>
     <div class="ai-tip-text" id="tip-text" style="display:none"></div>
@@ -239,7 +240,7 @@
 
   <!-- Save -->
   <div class="save-wrap">
-    <button class="btn-save" id="btn-save" onclick="handleSave()">💾  Save Checklist</button>
+    <button class="btn-save" id="btn-save" onclick="handleSave()" data-i18n="evidence.save">💾  Save Checklist</button>
   </div>
 
 </div>
@@ -287,6 +288,11 @@
     }
   }
 
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
   // ── Render checklist ──────────────────────────────────────────────────────
   function renderChecklist() {
     const body = document.getElementById('checklist-body');
@@ -305,7 +311,7 @@
             <path d="M1 5L5 9L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </div>
-        <span class="item-label ${isChecked ? 'done' : ''}" id="lbl-${item.id}">${item.label}</span>
+        <span class="item-label ${isChecked ? 'done' : ''}" id="lbl-${item.id}">${resolveDisplayText('checklistItems.' + item.label, item.label)}</span>
         ${item.required && !isChecked ? `<span class="badge-important" id="badge-${item.id}">Important</span>` : `<span id="badge-${item.id}"></span>`}
       `;
 
@@ -330,7 +336,7 @@
     } else {
       cb.classList.remove('checked');
       lbl.classList.remove('done');
-      if (bdg && item.required) bdg.innerHTML = '<span class="badge-important">Important</span>';
+      if (bdg && item.required) bdg.innerHTML = '<span class="badge-important">' + window.t('evidence.important') + '</span>';
     }
 
     updateProgress();
@@ -354,7 +360,7 @@
     const tipPlaceholder = document.getElementById('tip-placeholder');
 
     btn.disabled = true;
-    btn.textContent = 'Loading…';
+    btn.textContent = window.t('common.loading');
     tipText.style.display = 'none';
     tipPlaceholder.style.display = 'none';
 
@@ -374,16 +380,16 @@
         })
       });
       const data = await res.json();
-      const text = data.content?.map(b => b.text || '').join('') || 'Unable to load tip.';
+      const text = data.content?.map(b => b.text || '').join('') || window.t('evidence.tipFallback');
       tipText.textContent = text.trim();
       tipText.style.display = 'block';
     } catch (e) {
-      tipText.textContent = 'Unable to load tip. Please check your connection.';
+      tipText.textContent = window.t('evidence.tipFallbackConnection');
       tipText.style.display = 'block';
     }
 
     btn.disabled = false;
-    btn.textContent = 'Get Tip';
+    btn.textContent = window.t('evidence.getTip');
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────
@@ -392,7 +398,7 @@
     const errBox = document.getElementById('error-box');
 
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = window.t('evidence.saveLoading');
     errBox.style.display = 'none';
 
     try {
@@ -400,16 +406,16 @@
       await safeStayAPI.getEvidenceFiles(CASE_ID);
 
       btn.classList.add('saved');
-      btn.textContent = '✓  Saved!';
+      btn.textContent = window.t('evidence.saveSuccess');
       setTimeout(() => {
         btn.classList.remove('saved');
-        btn.textContent = '💾  Save Checklist';
+        btn.textContent = window.t('evidence.save');
         btn.disabled = false;
       }, 2500);
     } catch (err) {
-      errBox.textContent = 'Could not save. ' + (err.message || 'Please try again.');
+      errBox.textContent = window.t('evidence.saveError', { message: err.message || '' });
       errBox.style.display = 'block';
-      btn.textContent = '💾  Save Checklist';
+      btn.textContent = window.t('evidence.save');
       btn.disabled = false;
     }
   }
@@ -423,10 +429,10 @@
     try {
       const caseData = await safeStayAPI.getCase(CASE_ID);
       if (caseData) {
-        document.getElementById('page-title').textContent =
-          (caseData.detected_case || CASE_TYPE) + ' Evidence Checklist';
-        document.getElementById('case-subtitle').textContent =
-          (caseData.detected_case || CASE_TYPE) + ' Case · ' + CASE_ID;
+        document.getElementById('page-title').textContent = window.t('evidence.pageTitle');
+        const detectedCaseValue = caseData.detected_case || CASE_TYPE;
+        const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
+        document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;
         document.getElementById('urgency-badge').textContent =
           (caseData.urgency_level || 'HIGH').toUpperCase();
       }

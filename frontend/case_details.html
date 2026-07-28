@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Case Details – SafeStay</title>
+  <title data-i18n="pageTitles.caseDetails">Case Details – SafeStay</title>
+  <script src="i18n.js"></script>
   <script src="api.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -160,23 +161,23 @@
     <a href="history.html" class="appbar-icon">←</a>
     <div>
       <div class="appbar-title">SafeStay</div>
-      <div class="appbar-sub" id="case-subtitle">Loading…</div>
+      <div class="appbar-sub" id="case-subtitle" data-i18n="caseDetails.caseSubtitleLoading">Loading…</div>
     </div>
     <div class="badge-urgency high" id="urgency-badge">HIGH</div>
   </div>
 
   <!-- Page header -->
   <div class="page-header">
-    <div class="page-title" id="case-title">Case Details</div>
-    <div class="page-sub">Everything related to this case in one place</div>
+    <div class="page-title" id="case-title" data-i18n="caseDetails.pageTitle">Case Details</div>
+    <div class="page-sub" data-i18n="caseDetails.pageSub">Everything related to this case in one place</div>
   </div>
 
   <!-- Case info -->
   <div class="info-card" id="info-card">
-    <div class="info-row"><span class="info-label">Case ID</span><span class="info-value" id="info-id">—</span></div>
-    <div class="info-row"><span class="info-label">Date</span><span class="info-value" id="info-date">—</span></div>
-    <div class="info-row"><span class="info-label">Location</span><span class="info-value" id="info-location">—</span></div>
-    <div class="info-row"><span class="info-label">Status</span><span class="info-value" id="info-status">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.caseId">Case ID</span><span class="info-value" id="info-id">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.date">Date</span><span class="info-value" id="info-date">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.location">Location</span><span class="info-value" id="info-location">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.status">Status</span><span class="info-value" id="info-status">—</span></div>
   </div>
 
   <!-- Related sections -->
@@ -184,32 +185,32 @@
     <a class="section-row" href="#" id="row-evidence">
       <div class="section-icon" style="background:#EFF6FF">📎</div>
       <div class="section-body">
-        <div class="section-name">Evidence</div>
-        <div class="section-meta" id="evidence-meta">Checking…</div>
+        <div class="section-name" data-i18n="caseDetails.evidence">Evidence</div>
+        <div class="section-meta" id="evidence-meta" data-i18n="caseDetails.evidenceMetaChecking">Checking…</div>
       </div>
       <div class="section-chevron">›</div>
     </a>
     <a class="section-row" href="#" id="row-checklist">
       <div class="section-icon" style="background:#EFF6FF">✅</div>
       <div class="section-body">
-        <div class="section-name">Checklist</div>
-        <div class="section-meta" id="checklist-meta">View evidence checklist</div>
+        <div class="section-name" data-i18n="caseDetails.checklist">Checklist</div>
+        <div class="section-meta" id="checklist-meta" data-i18n="caseDetails.checklistMeta">View evidence checklist</div>
       </div>
       <div class="section-chevron">›</div>
     </a>
     <a class="section-row" href="#" id="row-contacts">
       <div class="section-icon" style="background:#FDF2F2">📞</div>
       <div class="section-body">
-        <div class="section-name">Contacts</div>
-        <div class="section-meta" id="contacts-meta">View recommended contacts</div>
+        <div class="section-name" data-i18n="caseDetails.contacts">Contacts</div>
+        <div class="section-meta" id="contacts-meta" data-i18n="caseDetails.contactsMeta">View recommended contacts</div>
       </div>
       <div class="section-chevron">›</div>
     </a>
     <a class="section-row" href="#" id="row-report">
       <div class="section-icon" style="background:#F0FDF4">📄</div>
       <div class="section-body">
-        <div class="section-name">Report</div>
-        <div class="section-meta" id="report-meta">Generate a police report draft</div>
+        <div class="section-name" data-i18n="caseDetails.report">Report</div>
+        <div class="section-meta" id="report-meta" data-i18n="caseDetails.reportMeta">Generate a police report draft</div>
       </div>
       <div class="section-chevron">›</div>
     </a>
@@ -217,13 +218,13 @@
 
   <!-- Update case status -->
   <div class="update-card">
-    <div class="update-title">Update Case</div>
+    <div class="update-title" data-i18n="caseDetails.updateCase">Update Case</div>
     <select class="status-select" id="status-select">
       <option value="In Progress">In Progress</option>
       <option value="Resolved">Resolved</option>
       <option value="Closed">Closed</option>
     </select>
-    <button class="btn-update" id="btn-update" onclick="handleUpdateCase()">Update Case</button>
+    <button class="btn-update" id="btn-update" onclick="handleUpdateCase()" data-i18n="caseDetails.updateCaseButton">Update Case</button>
   </div>
 
   <div class="error-box" id="error-box"></div>
@@ -245,10 +246,16 @@
     return ['high', 'medium', 'low'].includes(u) ? u : 'medium';
   }
 
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
   function renderCase(c) {
     CASE_DATA = c;
 
-    const title = c.detected_case || c.case_title || 'Case';
+    const titleValue = c.detected_case || c.case_title || 'Case';
+    const title = resolveDisplayText('caseTypes.' + titleValue, titleValue);
     document.getElementById('case-title').textContent = title;
     document.getElementById('case-subtitle').textContent = title + ' · ' + (c.case_id || CASE_ID || '');
 
@@ -262,7 +269,7 @@
       ? new Date(c.created_at).toLocaleString()
       : (c.date || '—');
     document.getElementById('info-location').textContent = c.location || '—';
-    document.getElementById('info-status').textContent = c.case_status || 'In Progress';
+    document.getElementById('info-status').textContent = c.case_status || window.t('common.inProgress');
 
     if (c.case_status) {
       document.getElementById('status-select').value = c.case_status;
@@ -289,7 +296,7 @@
 
     if (!CASE_ID) {
       if (!cached) {
-        document.getElementById('case-subtitle').textContent = 'No case selected';
+        document.getElementById('case-subtitle').textContent = window.t('caseDetails.noCaseSelected');
       }
       return;
     }
@@ -301,7 +308,7 @@
     } catch (err) {
       console.warn('Could not load case from backend:', err.message);
       if (!cached) {
-        document.getElementById('error-box').textContent = 'Could not load this case. ' + (err.message || '');
+        document.getElementById('error-box').textContent = window.t('caseDetails.loadError', { message: err.message || '' });
         document.getElementById('error-box').style.display = 'block';
       }
     }
@@ -309,7 +316,7 @@
 
   async function loadEvidenceCount() {
     if (!CASE_ID) {
-      document.getElementById('evidence-meta').textContent = 'View uploaded evidence';
+      document.getElementById('evidence-meta').textContent = window.t('caseDetails.evidenceMetaView');
       return;
     }
     try {
@@ -317,9 +324,9 @@
       const files = response.evidence || response.files || response;
       const count = Array.isArray(files) ? files.length : 0;
       document.getElementById('evidence-meta').textContent =
-        count === 1 ? '1 file uploaded' : count + ' files uploaded';
+        count === 1 ? window.t('caseDetails.evidenceMetaUploaded', { count: 1 }) : window.t('caseDetails.evidenceMetaUploadedPlural', { count });
     } catch (e) {
-      document.getElementById('evidence-meta').textContent = 'View uploaded evidence';
+      document.getElementById('evidence-meta').textContent = window.t('caseDetails.evidenceMetaView');
     }
   }
 
@@ -329,13 +336,13 @@
     const status = document.getElementById('status-select').value;
 
     if (!CASE_ID) {
-      errBox.textContent = 'No case selected to update.';
+      errBox.textContent = window.t('caseDetails.noCaseSelectedToUpdate');
       errBox.style.display = 'block';
       return;
     }
 
     btn.disabled = true;
-    btn.textContent = 'Updating…';
+    btn.textContent = window.t('caseDetails.updateSuccess');
     errBox.style.display = 'none';
 
     try {
@@ -349,16 +356,16 @@
       );
       document.getElementById('info-status').textContent = status;
       btn.classList.add('saved');
-      btn.textContent = '✓ Updated';
+      btn.textContent = window.t('caseDetails.updated');
       setTimeout(() => {
         btn.classList.remove('saved');
-        btn.textContent = 'Update Case';
+        btn.textContent = window.t('caseDetails.updateCase');
         btn.disabled = false;
       }, 2000);
     } catch (err) {
-      errBox.textContent = 'Could not update case. ' + (err.message || 'Please try again.');
+      errBox.textContent = window.t('caseDetails.updateError', { message: err.message || '' });
       errBox.style.display = 'block';
-      btn.textContent = 'Update Case';
+      btn.textContent = window.t('caseDetails.updateCase');
       btn.disabled = false;
     }
   }

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Emergency Contacts – SafeStay</title>
+  <title data-i18n="pageTitles.contacts">Emergency Contacts – SafeStay</title>
+  <script src="i18n.js"></script>
   <script src="api.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -158,23 +159,23 @@
     <a href="index.html" class="appbar-icon" style="text-decoration:none">🛡️</a>
     <div>
       <div class="appbar-title">SafeStay</div>
-      <div class="appbar-sub" id="case-subtitle">Loading…</div>
+      <div class="appbar-sub" id="case-subtitle" data-i18n="common.loading">Loading…</div>
     </div>
     <div class="badge-high" id="urgency-badge">HIGH</div>
   </div>
 
   <!-- Page header -->
   <div class="page-header">
-    <div class="page-title">Recommended Contacts</div>
-    <div class="page-sub">Based on your situation and location</div>
+    <div class="page-title" data-i18n="contacts.pageTitle">Recommended Contacts</div>
+    <div class="page-sub" data-i18n="contacts.pageSub">Based on your situation and location</div>
   </div>
 
   <!-- AI Priority Banner -->
   <div class="ai-banner">
     <div class="ai-banner-icon">🚨</div>
     <div>
-      <div class="ai-banner-label" id="banner-label">Urgency: High — AI Recommendation</div>
-      <div class="ai-banner-loading" id="banner-loading">Analysing your situation…</div>
+      <div class="ai-banner-label" id="banner-label" data-i18n="contacts.bannerLabel">Urgency: High — AI Recommendation</div>
+      <div class="ai-banner-loading" id="banner-loading" data-i18n="contacts.bannerLoading">Analysing your situation…</div>
       <div class="ai-banner-text" id="banner-text" style="display:none"></div>
     </div>
   </div>
@@ -190,18 +191,18 @@
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
         <circle cx="12" cy="10" r="3"/>
       </svg>
-      View on Map
+      <span data-i18n="contacts.viewOnMap">View on Map</span>
     </button>
   </div>
 
   <!-- Recommended Actions -->
   <div class="actions-box">
-    <div class="actions-title">Recommended Actions</div>
-    <div class="action-row"><div class="action-num">1</div><div class="action-text">Contact the police immediately</div></div>
-    <div class="action-row"><div class="action-num">2</div><div class="action-text">Block your bank cards and accounts</div></div>
-    <div class="action-row"><div class="action-num">3</div><div class="action-text">Gather all possible evidence</div></div>
-    <div class="action-row"><div class="action-num">4</div><div class="action-text">Check CCTV around the area</div></div>
-    <div class="action-row"><div class="action-num">5</div><div class="action-text">Report to your university (if needed)</div></div>
+    <div class="actions-title" data-i18n="contacts.recommendedActions">Recommended Actions</div>
+    <div class="action-row"><div class="action-num">1</div><div class="action-text" data-i18n="contacts.action1">Contact the police immediately</div></div>
+    <div class="action-row"><div class="action-num">2</div><div class="action-text" data-i18n="contacts.action2">Block your bank cards and accounts</div></div>
+    <div class="action-row"><div class="action-num">3</div><div class="action-text" data-i18n="contacts.action3">Gather all possible evidence</div></div>
+    <div class="action-row"><div class="action-num">4</div><div class="action-text" data-i18n="contacts.action4">Check CCTV around the area</div></div>
+    <div class="action-row"><div class="action-num">5</div><div class="action-text" data-i18n="contacts.action5">Report to your university (if needed)</div></div>
   </div>
 
 </div>
@@ -245,6 +246,11 @@
     }
   }
 
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
   // ── Render contacts ───────────────────────────────────────────────────────
   function renderContacts() {
     const list = document.getElementById('contact-list');
@@ -254,19 +260,21 @@
       const card = document.createElement('div');
       card.className = 'contact-card';
 
+      const translatedName = resolveDisplayText('contactNames.' + contact.name, contact.name);
+
       card.innerHTML = `
         <div class="contact-icon-wrap" style="background:${contact.color}18">
           ${contact.icon}
         </div>
         <div style="flex:1">
-          <div class="contact-name">${contact.name}</div>
+          <div class="contact-name">${translatedName}</div>
           <div class="contact-number">${contact.number}</div>
         </div>
         <button
           class="btn-call"
           id="call-btn-${contact.id}"
           style="background:${contact.color}"
-          aria-label="Call ${contact.name}"
+          aria-label="Call ${translatedName}"
           onclick="handleCall(${contact.id}, '${contact.number}', '${contact.color}')">
           ${phoneIconSVG()}
         </button>
@@ -324,14 +332,14 @@
         })
       });
       const data = await res.json();
-      const text = data.content?.map(b => b.text || '').join('') || 'Contact Police (999) immediately to file an official report.';
+      const text = data.content?.map(b => b.text || '').join('') || window.t('contacts.bannerFallback');
 
       document.getElementById('banner-loading').style.display = 'none';
       document.getElementById('banner-text').textContent = text.trim();
       document.getElementById('banner-text').style.display = 'block';
     } catch (e) {
       document.getElementById('banner-loading').style.display = 'none';
-      document.getElementById('banner-text').textContent = 'Contact Police (999) immediately to file an official report.';
+      document.getElementById('banner-text').textContent = window.t('contacts.bannerFallback');
       document.getElementById('banner-text').style.display = 'block';
     }
   }
@@ -346,12 +354,13 @@
     try {
       const caseData = await safeStayAPI.getCase(CASE_ID);
       if (caseData) {
-        document.getElementById('case-subtitle').textContent =
-          (caseData.detected_case || CASE_TYPE) + ' · ' + CASE_ID;
+        const detectedCaseValue = caseData.detected_case || CASE_TYPE;
+        const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
+        document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;
         const urg = (caseData.urgency_level || URGENCY).toUpperCase();
         document.getElementById('urgency-badge').textContent = urg;
         document.getElementById('banner-label').textContent =
-          'Urgency: ' + (caseData.urgency_level || URGENCY) + ' — AI Recommendation';
+          window.t('contacts.bannerLabel', { urgency: caseData.urgency_level || URGENCY });
       }
     } catch (e) {
       // Backend unavailable – fall back to static defaults

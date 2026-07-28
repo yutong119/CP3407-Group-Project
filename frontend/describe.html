@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SafeStay – Describe Your Situation</title>
+<title data-i18n="pageTitles.describe">SafeStay – Describe Your Situation</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -224,7 +224,11 @@
   <script>
     (function () {
       var saved = localStorage.getItem('safestay_preferred_language');
-      if (saved) document.getElementById('nav-lang-text').textContent = saved;
+      var code = saved && ['en', 'zh-CN', 'ja', 'fr'].includes(saved) ? saved : 'en';
+      var textEl = document.getElementById('nav-lang-text');
+      if (textEl) {
+        textEl.textContent = window.t ? window.t('languages.' + code) : code;
+      }
     })();
   </script>
 </nav>
@@ -235,24 +239,24 @@
   <div class="stepper">
     <div class="step active">
       <div class="step-circle">1</div>
-      <div class="step-label">Describe</div>
+      <div class="step-label" data-i18n="describe.stepDescribe">Describe</div>
     </div>
     <div class="step-line"></div>
     <div class="step">
       <div class="step-circle">2</div>
-      <div class="step-label">Details</div>
+      <div class="step-label" data-i18n="describe.stepDetails">Details</div>
     </div>
     <div class="step-line"></div>
     <div class="step">
       <div class="step-circle">3</div>
-      <div class="step-label">Review</div>
+      <div class="step-label" data-i18n="describe.stepReview">Review</div>
     </div>
   </div>
 
-  <a class="back-link" href="1_landing.html">← Back</a>
+  <a class="back-link" href="1_landing.html" data-i18n="common.back">← Back</a>
 
-  <h1 class="describe-title">Tell us what happened</h1>
-  <p class="describe-sub">Please describe your situation in as much detail as possible.</p>
+  <h1 class="describe-title" data-i18n="describe.title">Tell us what happened</h1>
+  <p class="describe-sub" data-i18n="describe.sub">Please describe your situation in as much detail as possible.</p>
 
   <!-- Textarea -->
   <div class="textarea-wrap">
@@ -261,38 +265,40 @@
       id="situation-input"
       maxlength="2000"
       placeholder="Type your description here... e.g. My bag was stolen at the university library. It contained my laptop, wallet and passport."
+      data-i18n-placeholder="describe.placeholder"
       oninput="updateCount(this)"
     ></textarea>
     <span class="char-count" id="char-count">0/2000</span>
   </div>
 
   <!-- Evidence Upload -->
-  <span class="field-label">Add Evidence <span class="optional">(Optional)</span></span>
+  <span class="field-label"><span data-i18n="describe.addEvidence">Add Evidence</span> <span class="optional" data-i18n="common.optional">(Optional)</span></span>
   <div class="upload-zone" onclick="document.getElementById('file-input').click()">
     <div class="upload-icon">☁️</div>
-    <p>Upload files or photos</p>
-    <p>Drag &amp; drop or <strong>click to browse</strong></p>
-    <p class="upload-note">JPG, PNG, PDF up to 10MB each</p>
+    <p data-i18n="describe.uploadFiles">Upload files or photos</p>
+    <p><span data-i18n="describe.browse">Drag &amp; drop or <strong>click to browse</strong></span></p>
+    <p class="upload-note" data-i18n="describe.uploadNote">JPG, PNG, PDF up to 10MB each</p>
     <input id="file-input" type="file" multiple accept="image/*,.pdf" style="display:none"
       onchange="showFiles(this)" />
   </div>
   <div id="file-list" style="margin-top:8px;font-size:12px;color:#6B7280;"></div>
 
   <!-- Location -->
-  <span class="field-label">Location <span class="optional">(Optional)</span></span>
+  <span class="field-label"><span data-i18n="describe.location">Location</span> <span class="optional" data-i18n="common.optional">(Optional)</span></span>
   <div class="location-input" onclick="getLocation(this)">
     <span>📍</span>
-    <span id="location-text">Use current location</span>
+    <span id="location-text" data-i18n="describe.useLocation">Use current location</span>
   </div>
 
   <div class="form-error" id="submit-error" style="display:none;color:#DC2626;font-size:13px;margin-top:12px;"></div>
 
-  <button class="btn-submit" id="submit-btn" onclick="handleSubmitCase()">
+  <button class="btn-submit" id="submit-btn" onclick="handleSubmitCase()" data-i18n="describe.next">
     Next: Provide Details →
   </button>
 
 </div>
 
+<script src="i18n.js"></script>
 <script src="api.js"></script>
 <script>
   let selectedCategoryId = null;
@@ -326,7 +332,7 @@
   document.addEventListener('DOMContentLoaded', loadCategories);
 
   function updateCount(el) {
-    document.getElementById('char-count').textContent = el.value.length + '/2000';
+    document.getElementById('char-count').textContent = window.t('describe.charCount', { count: el.value.length });
   }
 
   function showFiles(input) {
@@ -339,18 +345,18 @@
 
   function getLocation(el) {
     const text = document.getElementById('location-text');
-    text.textContent = 'Detecting location...';
+    text.textContent = window.t('describe.detectingLocation');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          text.textContent = '✅ Location detected';
+          text.textContent = window.t('describe.locationDetected');
           text.dataset.lat = pos.coords.latitude;
           text.dataset.lng = pos.coords.longitude;
         },
-        () => { text.textContent = 'Could not detect location'; }
+        () => { text.textContent = window.t('describe.locationError'); }
       );
     } else {
-      text.textContent = 'Geolocation not supported';
+      text.textContent = window.t('describe.geolocationUnsupported');
     }
   }
 
@@ -363,7 +369,7 @@
     errorEl.style.display = 'none';
 
     if (!description) {
-      errorEl.textContent = 'Please describe your situation before continuing.';
+      errorEl.textContent = window.t('describe.descriptionRequired');
       errorEl.style.display = 'block';
       return;
     }
@@ -375,7 +381,7 @@
     }
 
     btn.disabled = true;
-    btn.textContent = 'Analyzing...';
+    btn.textContent = window.t('describe.analyzing');
 
     try {
       const locationText = document.getElementById('location-text').textContent;
@@ -390,7 +396,7 @@
       //    evidence_checklist, and recommended_contacts without another round trip.
       sessionStorage.setItem('safestay_analysis', JSON.stringify(analysis));
 
-      btn.textContent = 'Submitting...';
+      btn.textContent = window.t('describe.submitting');
       const caseTitle = description.length > 60 ? description.slice(0, 60) + '...' : description;
 
       // 3. Create the case using the real analysis results instead of nulls.
@@ -417,11 +423,11 @@
 
       location.href = caseId ? `result.html?case_id=${caseId}` : 'result.html';
     } catch (err) {
-      errorEl.textContent = err.message || 'Something went wrong submitting your case. Please try again.';
+      errorEl.textContent = err.message || window.t('describe.createCaseError');
       errorEl.style.display = 'block';
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Next: Provide Details →';
+      btn.textContent = window.t('describe.next');
     }
   }
 </script>
