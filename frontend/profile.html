@@ -186,16 +186,7 @@
       <span class="menu-label" data-i18n="profile.notificationSettings">Notification Settings</span>
       <span class="menu-chevron">›</span>
     </a>
-    <a class="menu-row" href="#" id="row-privacy">
-      <span class="menu-icon">🔒</span>
-      <span class="menu-label" data-i18n="profile.privacySecurity">Privacy &amp; Security</span>
-      <span class="menu-chevron">›</span>
-    </a>
-    <a class="menu-row" href="#" id="row-help">
-      <span class="menu-icon">❓</span>
-      <span class="menu-label" data-i18n="profile.helpSupport">Help &amp; Support</span>
-      <span class="menu-chevron">›</span>
-    </a>
+
     <a class="menu-row danger" href="#" id="row-logout">
       <span class="menu-icon">🚪</span>
       <span class="menu-label" data-i18n="profile.logOut">Log Out</span>
@@ -299,7 +290,7 @@
             ? window.t('common.closed')
             : window.t('common.inProgress');
         return `
-          <a class="history-card" href="case-details.html?case_id=${encodeURIComponent(id)}">
+          <a class="history-card" href="case_details.html?case_id=${encodeURIComponent(id)}">
             <div class="history-icon">${iconFor(c.detected_case)}</div>
             <div style="flex:1">
               <div class="history-name">${type}</div>
