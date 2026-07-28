@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Cases – SafeStay</title>
+  <title data-i18n="pageTitles.history">My Cases – SafeStay</title>
+  <script src="i18n.js"></script>
   <script src="api.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -138,23 +139,23 @@
     <a href="index.html" class="appbar-icon">🛡️</a>
     <div>
       <div class="appbar-title">SafeStay</div>
-      <div class="appbar-sub">My Cases</div>
+      <div class="appbar-sub" data-i18n="history.title">My Cases</div>
     </div>
-    <a class="btn-new" href="describe.html">+ New Case</a>
+    <a class="btn-new" href="describe.html" data-i18n="history.newCase">+ New Case</a>
   </div>
 
   <!-- Tabs -->
   <div class="tabs" id="tabs">
-    <div class="tab active" data-status="all">All</div>
-    <div class="tab" data-status="in progress">In Progress</div>
-    <div class="tab" data-status="resolved">Resolved</div>
-    <div class="tab" data-status="closed">Closed</div>
+    <div class="tab active" data-status="all" data-i18n="history.all">All</div>
+    <div class="tab" data-status="in progress" data-i18n="history.inProgress">In Progress</div>
+    <div class="tab" data-status="resolved" data-i18n="history.resolved">Resolved</div>
+    <div class="tab" data-status="closed" data-i18n="history.closed">Closed</div>
   </div>
 
   <!-- Case list -->
   <div class="case-list" id="case-list"></div>
 
-  <div class="empty-state" id="empty-state" style="display:none">No cases yet. Start by describing your situation.</div>
+  <div class="empty-state" id="empty-state" style="display:none" data-i18n="history.emptyState">No cases yet. Start by describing your situation.</div>
   <div class="error-box" id="error-box"></div>
 
 </div>
@@ -206,7 +207,7 @@
 
     filtered.forEach(c => {
       const id = c.case_id || c.id;
-      const type = c.detected_case || c.case_title || 'Case';
+      const type = c.detected_case || c.case_title || window.t('common.loading');
       const card = document.createElement('a');
       card.className = 'case-card';
       card.href = 'case_details.html?case_id=' + encodeURIComponent(id);
@@ -214,7 +215,7 @@
         <div class="case-icon-wrap">${iconFor(c.detected_case)}</div>
         <div style="flex:1">
           <div class="case-name">${type}</div>
-          <div class="case-meta">${formatDate(c)} · ${c.location || 'Location unknown'}</div>
+          <div class="case-meta">${formatDate(c)} · ${c.location || window.t('common.locationUnknown')}</div>
         </div>
         <div class="case-status ${statusClass(c.case_status)}">${(c.case_status || 'In Progress')}</div>
       `;
@@ -248,7 +249,7 @@
     } catch (err) {
       console.warn('Could not load cases:', err.message);
       const errBox = document.getElementById('error-box');
-      errBox.textContent = 'Could not load your cases. ' + (err.message || '');
+      errBox.textContent = window.t('history.loadError', { message: err.message || '' });
       errBox.style.display = 'block';
       document.getElementById('empty-state').style.display = 'block';
     }

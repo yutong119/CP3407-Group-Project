@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Profile – SafeStay</title>
+  <title data-i18n="pageTitles.profile">My Profile – SafeStay</title>
+  <script src="i18n.js"></script>
   <script src="api.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -149,7 +150,7 @@
     <a href="index.html" class="appbar-icon">🛡️</a>
     <div>
       <div class="appbar-title">SafeStay</div>
-      <div class="appbar-sub">My Profile</div>
+      <div class="appbar-sub" data-i18n="profile.pageTitle">My Profile</div>
     </div>
   </div>
 
@@ -157,7 +158,7 @@
   <div class="profile-card">
     <div class="avatar">👤</div>
     <div>
-      <div class="profile-name" id="profile-name">Loading…</div>
+      <div class="profile-name" id="profile-name" data-i18n="profile.loading">Loading…</div>
       <div class="profile-email" id="profile-email">—</div>
     </div>
   </div>
@@ -166,49 +167,49 @@
   <div class="menu-list">
     <a class="menu-row" href="#" id="row-personal">
       <span class="menu-icon">👤</span>
-      <span class="menu-label">Personal Information</span>
+      <span class="menu-label" data-i18n="profile.personalInfo">Personal Information</span>
       <span class="menu-chevron">›</span>
     </a>
     <a class="menu-row" href="contacts.html">
       <span class="menu-icon">📇</span>
-      <span class="menu-label">Saved Contacts</span>
+      <span class="menu-label" data-i18n="profile.savedContacts">Saved Contacts</span>
       <span class="menu-chevron">›</span>
     </a>
     <a class="menu-row" href="language.html">
       <span class="menu-icon">🌐</span>
-      <span class="menu-label">Language</span>
+      <span class="menu-label" data-i18n="profile.language">Language</span>
       <span class="menu-value" id="current-language">English</span>
       <span class="menu-chevron">›</span>
     </a>
     <a class="menu-row" href="#" id="row-notifications">
       <span class="menu-icon">🔔</span>
-      <span class="menu-label">Notification Settings</span>
+      <span class="menu-label" data-i18n="profile.notificationSettings">Notification Settings</span>
       <span class="menu-chevron">›</span>
     </a>
     <a class="menu-row" href="#" id="row-privacy">
       <span class="menu-icon">🔒</span>
-      <span class="menu-label">Privacy &amp; Security</span>
+      <span class="menu-label" data-i18n="profile.privacySecurity">Privacy &amp; Security</span>
       <span class="menu-chevron">›</span>
     </a>
     <a class="menu-row" href="#" id="row-help">
       <span class="menu-icon">❓</span>
-      <span class="menu-label">Help &amp; Support</span>
+      <span class="menu-label" data-i18n="profile.helpSupport">Help &amp; Support</span>
       <span class="menu-chevron">›</span>
     </a>
     <a class="menu-row danger" href="#" id="row-logout">
       <span class="menu-icon">🚪</span>
-      <span class="menu-label">Log Out</span>
+      <span class="menu-label" data-i18n="profile.logOut">Log Out</span>
       <span class="menu-chevron">›</span>
     </a>
   </div>
 
   <!-- Case history -->
   <div class="section-title-row">
-    <div class="section-title">Case History</div>
-    <a class="section-link" href="history.html">View all →</a>
+    <div class="section-title" data-i18n="profile.caseHistory">Case History</div>
+    <a class="section-link" href="history.html" data-i18n="profile.viewAll">View all →</a>
   </div>
   <div class="history-list" id="history-list"></div>
-  <div class="empty-note" id="history-empty" style="display:none">No cases yet.</div>
+  <div class="empty-note" id="history-empty" style="display:none" data-i18n="profile.noCases">No cases yet.</div>
 
   <div class="error-box" id="error-box"></div>
 
@@ -231,6 +232,12 @@
     if (s.includes('closed')) return 'closed';
     return 'in-progress';
   }
+
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
   function formatDate(c) {
     if (c.created_at) {
       return new Date(c.created_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
@@ -239,14 +246,18 @@
   }
 
   function renderProfile(profile) {
-    document.getElementById('profile-name').textContent = profile.full_name || profile.name || 'SafeStay User';
+    document.getElementById('profile-name').textContent = profile.full_name || profile.name || window.t('profile.safeStayUser');
     document.getElementById('profile-email').textContent = profile.email || '—';
     if (profile.preferred_language) {
-      document.getElementById('current-language').textContent = profile.preferred_language;
+      const languageLabel = window.t('languages.' + profile.preferred_language) || profile.preferred_language;
+      document.getElementById('current-language').textContent = languageLabel;
       localStorage.setItem('safestay_preferred_language', profile.preferred_language);
     } else {
       const cached = localStorage.getItem('safestay_preferred_language');
-      if (cached) document.getElementById('current-language').textContent = cached;
+      if (cached) {
+        const languageLabel = window.t('languages.' + cached) || cached;
+        document.getElementById('current-language').textContent = languageLabel;
+      }
     }
   }
 
@@ -257,10 +268,13 @@
       renderProfile(profile);
     } catch (err) {
       console.warn('Could not load profile:', err.message);
-      document.getElementById('profile-name').textContent = 'SafeStay User';
-      document.getElementById('profile-email').textContent = 'Sign in to view your profile';
+      document.getElementById('profile-name').textContent = window.t('profile.safeStayUser');
+      document.getElementById('profile-email').textContent = window.t('profile.signInPrompt');
       const cached = localStorage.getItem('safestay_preferred_language');
-      if (cached) document.getElementById('current-language').textContent = cached;
+      if (cached) {
+        const languageLabel = window.t('languages.' + cached) || cached;
+        document.getElementById('current-language').textContent = languageLabel;
+      }
     }
   }
 
@@ -276,7 +290,14 @@
       }
       list.innerHTML = cases.map(c => {
         const id = c.case_id || c.id;
-        const type = c.detected_case || c.case_title || 'Case';
+        const typeValue = c.detected_case || c.case_title || window.t('profile.caseLabel');
+        const type = resolveDisplayText('caseTypes.' + (c.detected_case || c.case_title || 'Case'), typeValue);
+        const statusValue = c.case_status || 'In Progress';
+        const translatedStatus = statusValue.toLowerCase() === 'resolved'
+          ? window.t('common.resolved')
+          : statusValue.toLowerCase() === 'closed'
+            ? window.t('common.closed')
+            : window.t('common.inProgress');
         return `
           <a class="history-card" href="case-details.html?case_id=${encodeURIComponent(id)}">
             <div class="history-icon">${iconFor(c.detected_case)}</div>
@@ -284,13 +305,13 @@
               <div class="history-name">${type}</div>
               <div class="history-meta">${formatDate(c)}</div>
             </div>
-            <div class="history-status ${statusClass(c.case_status)}">${(c.case_status || 'In Progress')}</div>
+            <div class="history-status ${statusClass(c.case_status)}">${translatedStatus}</div>
           </a>
         `;
       }).join('');
     } catch (err) {
       console.warn('Could not load case history:', err.message);
-      empty.textContent = 'Could not load case history.';
+      empty.textContent = window.t('profile.loadHistoryError');
       empty.style.display = 'block';
     }
   }
