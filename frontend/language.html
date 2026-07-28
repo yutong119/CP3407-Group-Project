@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Language – SafeStay</title>
+  <title data-i18n="pageTitles.language">Language – SafeStay</title>
+  <script src="i18n.js"></script>
   <script src="api.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,21 +98,21 @@
     <a href="profile.html" class="appbar-icon" id="appbar-back">←</a>
     <div>
       <div class="appbar-title">SafeStay</div>
-      <div class="appbar-sub">Language Support</div>
+      <div class="appbar-sub" data-i18n="profile.language">Language Support</div>
     </div>
   </div>
 
   <div class="page-header">
-    <div class="page-title">Choose your language</div>
-    <div class="page-sub">SafeStay guidance will be shown in this language where available</div>
+    <div class="page-title" data-i18n="language.pageTitle">Choose your language</div>
+    <div class="page-sub" data-i18n="language.pageSub">SafeStay guidance will be shown in this language where available</div>
   </div>
 
   <div class="lang-list" id="lang-list"></div>
 
-  <div class="save-note" id="save-note">✓ Language preference saved</div>
+  <div class="save-note" id="save-note" data-i18n="language.saved">✓ Language preference saved</div>
   <div class="error-box" id="error-box"></div>
 
-  <a href="profile.html" id="btn-done" style="display:block;margin:20px 16px 0;padding:13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:14px;font-weight:600;color:#374151;text-align:center;text-decoration:none">Done</a>
+  <a href="profile.html" id="btn-done" style="display:block;margin:20px 16px 0;padding:13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:14px;font-weight:600;color:#374151;text-align:center;text-decoration:none" data-i18n="language.done">Done</a>
 
 </div>
 
@@ -121,18 +122,35 @@
   document.getElementById('appbar-back').href = RETURN_TO;
   document.getElementById('btn-done').href = RETURN_TO;
 
+  const BACKEND_LANGUAGE_NAMES = {
+    en: 'English',
+    'zh-CN': 'Chinese (Simplified)',
+    ja: 'Japanese',
+    fr: 'French'
+  };
+
+  const LANGUAGE_CODES = Object.keys(BACKEND_LANGUAGE_NAMES);
+  const LANGUAGE_DISPLAY_NAMES = Object.fromEntries(
+    Object.entries(BACKEND_LANGUAGE_NAMES).map(([code, label]) => [label, code])
+  );
+
   const LANGUAGES = [
-    { code: 'English',            flag: '🇬🇧', native: 'English' },
-    { code: 'Chinese (Simplified)', flag: '🇨🇳', native: '中文（简体）' },
-    { code: 'Japanese',           flag: '🇯🇵', native: '日本語' },
-    { code: 'Korean',             flag: '🇰🇷', native: '한국어' },
-    { code: 'Spanish',            flag: '🇪🇸', native: 'Español' },
-    { code: 'Arabic',             flag: '🇸🇦', native: 'العربية' },
-    { code: 'French',             flag: '🇫🇷', native: 'Français' },
+    { code: 'en', label: 'English', flag: '🇬🇧', native: 'English' },
+    { code: 'zh-CN', label: 'Chinese (Simplified)', flag: '🇨🇳', native: '中文（简体）' },
+    { code: 'ja', label: 'Japanese', flag: '🇯🇵', native: '日本語' },
+    { code: 'fr', label: 'French', flag: '🇫🇷', native: 'Français' },
   ];
 
-  let CURRENT_LANGUAGE = 'English';
+  let CURRENT_LANGUAGE = 'en';
   let CURRENT_NAME = '';
+
+  function normalizeLanguageCode(value) {
+    if (typeof value !== 'string') return 'en';
+    const trimmed = value.trim();
+    if (LANGUAGE_CODES.includes(trimmed)) return trimmed;
+    if (LANGUAGE_DISPLAY_NAMES[trimmed]) return LANGUAGE_DISPLAY_NAMES[trimmed];
+    return 'en';
+  }
 
   function render() {
     const list = document.getElementById('lang-list');
@@ -140,7 +158,7 @@
       <div class="lang-row ${l.code === CURRENT_LANGUAGE ? 'selected' : ''}" data-code="${l.code}">
         <span class="lang-flag">${l.flag}</span>
         <div class="lang-body">
-          <div class="lang-name">${l.code}</div>
+          <div class="lang-name">${l.label}</div>
           <div class="lang-native">${l.native}</div>
         </div>
         <span class="lang-check">✓</span>
@@ -153,7 +171,8 @@
   }
 
   async function selectLanguage(code) {
-    if (code === CURRENT_LANGUAGE) return;
+    const selectedLanguageCode = normalizeLanguageCode(code);
+    if (selectedLanguageCode === CURRENT_LANGUAGE) return;
 
     const errBox = document.getElementById('error-box');
     const note = document.getElementById('save-note');
@@ -161,18 +180,21 @@
     note.style.display = 'none';
 
     const previous = CURRENT_LANGUAGE;
-    CURRENT_LANGUAGE = code;
+    CURRENT_LANGUAGE = selectedLanguageCode;
     render();
 
     try {
-      await safeStayAPI.updateProfile(CURRENT_NAME, code);
-      localStorage.setItem('safestay_preferred_language', code);
+      await safeStayAPI.updateProfile(CURRENT_NAME, BACKEND_LANGUAGE_NAMES[selectedLanguageCode]);
+      localStorage.setItem('safestay_preferred_language', selectedLanguageCode);
+      if (typeof window.changeLanguage === 'function') {
+        await window.changeLanguage(selectedLanguageCode);
+      }
       note.style.display = 'block';
       setTimeout(() => { window.location.href = RETURN_TO; }, 900);
     } catch (err) {
       CURRENT_LANGUAGE = previous;
       render();
-      errBox.textContent = 'Could not save language preference. ' + (err.message || 'Please try again.');
+      errBox.textContent = window.t('language.saveError', { message: err.message || '' });
       errBox.style.display = 'block';
     }
   }
@@ -189,9 +211,16 @@
       const response = await safeStayAPI.getUserProfile();
       const profile = response.user || response;
       CURRENT_NAME = profile.full_name || profile.name || '';
-      if (profile.preferred_language) {
-        CURRENT_LANGUAGE = profile.preferred_language;
-        localStorage.setItem('safestay_preferred_language', profile.preferred_language);
+
+      const storedLanguageCode = localStorage.getItem('safestay_preferred_language');
+      if (storedLanguageCode && LANGUAGE_CODES.includes(storedLanguageCode.trim())) {
+        CURRENT_LANGUAGE = storedLanguageCode.trim();
+        localStorage.setItem('safestay_preferred_language', CURRENT_LANGUAGE);
+      } else if (profile.preferred_language) {
+        CURRENT_LANGUAGE = normalizeLanguageCode(profile.preferred_language);
+        localStorage.setItem('safestay_preferred_language', CURRENT_LANGUAGE);
+      } else if (storedLanguageCode) {
+        CURRENT_LANGUAGE = normalizeLanguageCode(storedLanguageCode);
       }
     } catch (err) {
       console.warn('Could not load profile:', err.message);

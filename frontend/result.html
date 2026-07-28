@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SafeStay – Analysis Result</title>
+<title data-i18n="pageTitles.result">SafeStay – Analysis Result</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -230,21 +230,25 @@
   <script>
     (function () {
       var saved = localStorage.getItem('safestay_preferred_language');
-      if (saved) document.getElementById('nav-lang-text').textContent = saved;
+      var code = saved && ['en', 'zh-CN', 'ja', 'fr'].includes(saved) ? saved : 'en';
+      var textEl = document.getElementById('nav-lang-text');
+      if (textEl) {
+        textEl.textContent = window.t ? window.t('languages.' + code) : code;
+      }
     })();
   </script>
 </nav>
 
 <div class="result-wrap">
 
-  <a class="back-link" href="describe.html">← Edit description</a>
+  <a class="back-link" href="describe.html" data-i18n="common.editDescription">← Edit description</a>
 
-  <h1>Analysis Result</h1>
+  <h1 data-i18n="result.analysisResult">Analysis Result</h1>
 
   <!-- Detected Case -->
   <div class="detected-card">
     <div>
-      <div class="detected-label">Detected Case</div>
+      <div class="detected-label" data-i18n="result.detectedCase">Detected Case</div>
       <div class="detected-type" id="detected-type">Loading…</div>
       <div class="detected-prob" id="detected-prob">&nbsp;</div>
     </div>
@@ -255,7 +259,7 @@
   <div class="urgency-card medium" id="urgency-card">
     <div class="urgency-icon">⏳</div>
     <div>
-      <div class="urgency-title">Urgency Level</div>
+      <div class="urgency-title" data-i18n="result.urgencyLevel">Urgency Level</div>
       <span class="urgency-badge medium" id="urgency-badge">Loading…</span>
       <p class="urgency-desc" id="urgency-desc">Fetching the analysis for this case…</p>
     </div>
@@ -266,7 +270,7 @@
 
   <!-- Recommended Actions -->
   <div class="actions-card">
-    <h3>Recommended Actions</h3>
+    <h3 data-i18n="result.recommendedActions">Recommended Actions</h3>
     <div class="action-item">
       <div class="action-num">•</div>
       <div class="action-text">Loading recommended actions…</div>
@@ -275,16 +279,17 @@
 
   <!-- CTA Buttons -->
   <div class="result-btns">
-    <button class="btn-result outline" id="checklist-btn">📋 View Checklist</button>
-    <button class="btn-result primary" id="contacts-btn">📞 View Contacts</button>
+    <button class="btn-result outline" id="checklist-btn" data-i18n="result.viewChecklist">📋 View Checklist</button>
+    <button class="btn-result primary" id="contacts-btn" data-i18n="result.viewContacts">📞 View Contacts</button>
   </div>
 
-  <a class="btn-back" href="#" id="case-details-btn" style="margin-bottom:10px">📁 View Full Case Details</a>
+  <a class="btn-back" href="#" id="case-details-btn" style="margin-bottom:10px" data-i18n="result.viewCaseDetails">📁 View Full Case Details</a>
 
-  <a class="btn-back" href="index.html">← Back to Home</a>
+  <a class="btn-back" href="index.html" data-i18n="result.backHome">← Back to Home</a>
 
 </div>
 
+<script src="i18n.js"></script>
 <script src="api.js"></script>
 <script>
   const params = new URLSearchParams(window.location.search);
@@ -321,6 +326,11 @@
     banner.style.display = 'block';
   }
 
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
   function renderAnalysis(caseData) {
     // Log the raw shape once so it's easy to see in devtools exactly what the backend sent
     console.log('SafeStay: case data received', caseData);
@@ -335,16 +345,17 @@
       (caseData.analysis && caseData.analysis.probability);
 
     if (detectedCase) {
-      document.getElementById('detected-type').textContent = detectedCase;
+      const displayedCaseType = resolveDisplayText('caseTypes.' + detectedCase, detectedCase);
+      document.getElementById('detected-type').textContent = displayedCaseType;
       const key = String(detectedCase).toLowerCase();
       document.getElementById('detected-icon').textContent = CASE_ICONS[key] || CASE_ICONS.default;
     } else {
-      document.getElementById('detected-type').textContent = 'Unknown';
-      showError('The server responded, but no detected case type was included in the data. Check the console for the raw response.');
+      document.getElementById('detected-type').textContent = window.t('result.unknown');
+      showError(window.t('result.missingCaseType'));
     }
 
     if (probability != null) {
-      document.getElementById('detected-prob').textContent = `Probability: ${probability}%`;
+      document.getElementById('detected-prob').textContent = window.t('result.probability', { probability: probability });
     } else {
       document.getElementById('detected-prob').textContent = '';
     }
@@ -358,14 +369,14 @@
     badge.className = `urgency-badge ${urgency}`;
 
     if (urgency === 'high') {
-      badge.textContent = '⚠ High';
-      desc.textContent  = 'This situation requires immediate attention. Please act on the steps below as soon as possible.';
+      badge.textContent = window.t('result.high');
+      desc.textContent  = window.t('result.highDesc');
     } else if (urgency === 'low') {
-      badge.textContent = '✓ Low';
-      desc.textContent  = 'This situation is not urgent, but it\u2019s still worth following the steps below.';
+      badge.textContent = window.t('result.low');
+      desc.textContent  = window.t('result.lowDesc');
     } else {
-      badge.textContent = '⚠ Medium';
-      desc.textContent  = 'This situation should be addressed soon. Review the recommended steps below.';
+      badge.textContent = window.t('result.medium');
+      desc.textContent  = window.t('result.mediumDesc');
     }
 
     // Recommended actions — always replace the loading/placeholder list with real data,
@@ -377,7 +388,7 @@
     const actionsCard = document.querySelector('.actions-card');
     const items = actions.map((action, i) => {
       const text = typeof action === 'string'
-        ? action
+        ? resolveDisplayText('actionTexts.' + action, action)
         : (action.step_description || action.step_title || action.item_name || 'Recommended step');
       return `
       <div class="action-item">
@@ -386,7 +397,7 @@
       </div>
     `;
     }).join('');
-    actionsCard.innerHTML = '<h3>Recommended Actions</h3>' + items;
+    actionsCard.innerHTML = '<h3>' + window.t('result.recommendedActions') + '</h3>' + items;
   }
 
   async function loadCaseResult() {
@@ -408,7 +419,7 @@
 
     if (!caseId) {
       if (!renderedFromCache) {
-        showError('No case was specified, so no analysis could be loaded. Please start again from the description page.');
+        showError(window.t('result.noCaseSpecified'));
       }
       return;
     }
@@ -426,7 +437,7 @@
     } catch (err) {
       console.error('Failed to load case result:', err);
       if (!renderedFromCache) {
-        showError(`Couldn't load this case from the server (${err.message}). Please try again.`);
+        showError(window.t('result.loadError', { message: err.message }));
       }
     }
   }
