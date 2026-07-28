@@ -224,18 +224,6 @@
   <!-- Checklist items -->
   <div class="checklist-body" id="checklist-body"></div>
 
-  <!-- AI Tip -->
-  <div class="ai-tip-box">
-    <div class="ai-tip-row">
-      <span class="ai-tip-title" data-i18n="evidence.aiTipTitle">✨ AI Evidence Tip</span>
-      <button class="btn-get-tip" id="btn-tip" onclick="getAITip()" data-i18n="evidence.getTip">Get Tip</button>
-    </div>
-    <div class="ai-tip-placeholder" id="tip-placeholder" data-i18n="evidence.tipPlaceholder">
-      Tap "Get Tip" for personalised advice based on your checklist progress.
-    </div>
-    <div class="ai-tip-text" id="tip-text" style="display:none"></div>
-  </div>
-
   <!-- Error -->
   <div class="error-box" id="error-box"></div>
 
@@ -352,45 +340,6 @@
     document.getElementById('count-total').textContent = total;
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-pct').textContent  = pct + '%';
-  }
-
-  // ── AI Tip ────────────────────────────────────────────────────────────────
-  async function getAITip() {
-    const btn = document.getElementById('btn-tip');
-    const tipText  = document.getElementById('tip-text');
-    const tipPlaceholder = document.getElementById('tip-placeholder');
-
-    btn.disabled = true;
-    btn.textContent = window.t('common.loading');
-    tipText.style.display = 'none';
-    tipPlaceholder.style.display = 'none';
-
-    const collected = ITEMS.filter(i => checked[i.id]).map(i => i.label).join(', ');
-    const missing   = ITEMS.filter(i => !checked[i.id]).map(i => i.label).join(', ');
-
-    const prompt = `A student had a ${CASE_TYPE} at ${CASE_LOC}. Description: ${CASE_DESC}. They have collected: ${collected || 'nothing yet'}. They still need: ${missing || 'nothing – all collected!'}. Give ONE concise practical tip (2 sentences max) on what to prioritise next for their police report and insurance claim.`;
-
-    try {
-      const res = await fetch(CLAUDE_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.map(b => b.text || '').join('') || window.t('evidence.tipFallback');
-      tipText.textContent = text.trim();
-      tipText.style.display = 'block';
-    } catch (e) {
-      tipText.textContent = window.t('evidence.tipFallbackConnection');
-      tipText.style.display = 'block';
-    }
-
-    btn.disabled = false;
-    btn.textContent = window.t('evidence.getTip');
   }
 
   // ── Save ──────────────────────────────────────────────────────────────────
