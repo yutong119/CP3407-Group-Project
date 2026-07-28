@@ -128,6 +128,7 @@
       display: none;
     }
   </style>
+<link rel="stylesheet" href="responsive.css" />
 </head>
 <body>
 <div class="app-wrapper">
@@ -204,29 +205,21 @@
     empty.style.display = 'none';
 
     filtered.forEach(c => {
-    const id = c.case_id || c.id;
-    const type = c.detected_case || c.case_title || 'Case';
-
-    const card = document.createElement('a');
-    card.className = 'case-card';
-
-    card.href = 'case_details.html?case_id=' + encodeURIComponent(id);
-
-    card.innerHTML = `
-      <div class="case-icon-wrap">${iconFor(type)}</div>
-      <div style="flex:1">
-        <div class="case-name">${type}</div>
-        <div class="case-meta">
-          ${formatDate(c)} · ${c.location || 'Location unknown'}
+      const id = c.case_id || c.id;
+      const type = c.detected_case || c.case_title || 'Case';
+      const card = document.createElement('a');
+      card.className = 'case-card';
+      card.href = 'case-details.html?case_id=' + encodeURIComponent(id);
+      card.innerHTML = `
+        <div class="case-icon-wrap">${iconFor(c.detected_case)}</div>
+        <div style="flex:1">
+          <div class="case-name">${type}</div>
+          <div class="case-meta">${formatDate(c)} · ${c.location || 'Location unknown'}</div>
         </div>
-      </div>
-      <div class="case-status ${statusClass(c.case_status)}">
-        ${c.case_status || 'In Progress'}
-      </div>
-    `;
-
-    list.appendChild(card);
-});
+        <div class="case-status ${statusClass(c.case_status)}">${(c.case_status || 'In Progress')}</div>
+      `;
+      list.appendChild(card);
+    });
   }
 
   function setupTabs() {
