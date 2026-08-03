@@ -170,31 +170,6 @@
   }
   .action-text { font-size: 13px; color: var(--gray-700); line-height: 1.5; padding-top: 3px; }
 
-  .summary-card {
-    background: var(--white);
-    border: 1px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 14px;
-    box-shadow: var(--shadow-sm);
-  }
-  .summary-card h3 {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  .summary-meta {
-    font-size: 13px;
-    color: var(--gray-500);
-    margin-bottom: 10px;
-  }
-  .summary-list {
-    font-size: 13px;
-    color: var(--gray-700);
-    line-height: 1.5;
-    padding-left: 18px;
-  }
-
   .report-card {
     background: var(--white);
     border: 1px solid var(--gray-200);
@@ -422,18 +397,6 @@
     </div>
   </div>
 
-  <div class="summary-card" id="checklist-summary-card">
-    <h3>Evidence Checklist Summary</h3>
-    <div class="summary-meta" id="checklist-summary-meta">Loading checklist summary…</div>
-    <ol class="summary-list" id="checklist-summary-list"></ol>
-  </div>
-
-  <div class="summary-card" id="contacts-summary-card">
-    <h3>Recommended Contacts Summary</h3>
-    <div class="summary-meta" id="contacts-summary-meta">Loading contacts summary…</div>
-    <ol class="summary-list" id="contacts-summary-list"></ol>
-  </div>
-
   <div class="report-card" id="formal-report">
     <div class="report-title">Generate Formal Report</div>
     <div class="report-subtitle">Create a structured incident report using your case details, evidence checklist, recommended actions, and contacts.</div>
@@ -544,50 +507,6 @@
     document.getElementById('btn-collapse-report').style.display = visible ? 'inline-block' : 'none';
   }
 
-  function renderChecklistSummary(checklistItems = [], templateItems = []) {
-    const meta = document.getElementById('checklist-summary-meta');
-    const list = document.getElementById('checklist-summary-list');
-
-    const completedCount = checklistItems.filter(item => item.is_completed === 1 || item.is_completed === true).length;
-    if (checklistItems.length) {
-      meta.textContent = `${completedCount}/${checklistItems.length} completed`;
-      list.innerHTML = checklistItems.slice(0, 5).map((item) => {
-        const done = item.is_completed === 1 || item.is_completed === true;
-        return `<li>${item.item_name || 'Checklist item'} (${done ? 'Completed' : 'Not completed'})</li>`;
-      }).join('');
-      return;
-    }
-
-    if (templateItems.length) {
-      meta.textContent = `${templateItems.length} checklist items suggested`;
-      list.innerHTML = templateItems.slice(0, 5).map((item) => {
-        const required = item.is_required === 1 || item.is_required === true || item.required === true;
-        return `<li>${item.item_name || item.label || 'Checklist item'} (${required ? 'Required' : 'Optional'})</li>`;
-      }).join('');
-      return;
-    }
-
-    meta.textContent = 'No checklist data available yet.';
-    list.innerHTML = '';
-  }
-
-  function renderContactsSummary(contacts = []) {
-    const meta = document.getElementById('contacts-summary-meta');
-    const list = document.getElementById('contacts-summary-list');
-
-    if (!contacts.length) {
-      meta.textContent = 'No recommended contacts available.';
-      list.innerHTML = '';
-      return;
-    }
-
-    meta.textContent = `${contacts.length} contact suggestions`;
-    list.innerHTML = contacts.slice(0, 5).map((contact) => {
-      const fallback = contact.number || contact.email || contact.website || 'No direct contact detail';
-      return `<li>${contact.name || 'Contact'} (${contact.type || 'Support'}): ${fallback}</li>`;
-    }).join('');
-  }
-
   function renderAnalysis(caseData) {
     console.log('SafeStay: case data received', caseData);
 
@@ -652,8 +571,6 @@
     }).join('');
     actionsCard.innerHTML = '<h3>' + window.t('result.recommendedActions') + '</h3>' + items;
 
-    renderChecklistSummary(caseData.checklist || [], caseData.evidence_checklist || []);
-    renderContactsSummary(caseData.recommended_contacts || []);
   }
 
   function formatChecklistRows(report) {
