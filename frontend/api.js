@@ -98,6 +98,10 @@ class SafeStayAPI {
     return this.request(`/cases/${caseId}`);
   }
 
+  async getCaseReport(caseId) {
+    return this.request(`/cases/${caseId}/report`);
+  }
+
   async createCase(categoryId, caseTitle, description, location, urgencyLevel, detectedCase, probability) {
     return this.request('/cases', 'POST', {
       category_id: categoryId,
