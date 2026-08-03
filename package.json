@@ -1,0 +1,10 @@
+{
+  "name": "safestay-teacher-demo",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Teacher demo helpers for SafeStay",
+  "scripts": {
+    "test:e2e": "node tests/e2e-test.js",
+    "start:demo": "bash ./start-demo.sh"
+  }
+}

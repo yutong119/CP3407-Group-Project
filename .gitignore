@@ -20,3 +20,11 @@ backend/uploads/
 # Logs
 *.log
 npm-debug.log*
+
+# Generated documents and temporary files
+*.pdf
+tmp/
+temp/
+*.tmp
+*.swp
+.demo-logs/
