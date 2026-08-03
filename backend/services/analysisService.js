@@ -11,6 +11,19 @@ const CATEGORY_MAP = {
 
 const ALLOWED_URGENCY_LEVELS = ['Low', 'Medium', 'High'];
 
+function normalizeProbabilityValue(probability, fallbackProbability) {
+  const numericProbability = Number(probability);
+  if (!Number.isFinite(numericProbability)) {
+    return fallbackProbability;
+  }
+
+  const scaledProbability = (numericProbability >= 0 && numericProbability <= 1)
+    ? numericProbability * 100
+    : numericProbability;
+
+  return Math.max(0, Math.min(100, scaledProbability));
+}
+
 function detectIncident(description) {
   const text = (description || '').toLowerCase();
 
@@ -124,8 +137,7 @@ function normalizeAnalysis(analysis, fallback) {
   })();
 
   const resolvedProbability = (() => {
-    const probability = Number(analysis?.probability);
-    return Number.isFinite(probability) ? probability : fallback.probability;
+    return normalizeProbabilityValue(analysis?.probability, fallback.probability);
   })();
 
   return {
