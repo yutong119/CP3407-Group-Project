@@ -235,16 +235,11 @@
 </div>
 
 <script>
-  // ── Config ────────────────────────────────────────────────────────────────
-  const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
-
   // Case context – case_id comes from the URL (?case_id=...), the rest are
   // fallback defaults used only if no analysis/case data is available yet.
   const params = new URLSearchParams(window.location.search);
-  const CASE_ID   = params.get('case_id') || 'THF-2024-00023';
+  const CASE_ID   = params.get('case_id');
   let CASE_TYPE = 'Theft';
-  const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
-  const CASE_LOC  = 'University Library, Main St, Sydney';
 
   // ── Checklist data ────────────────────────────────────────────────────────
   // Fallback defaults — overwritten by evidence_checklist from the analysis if present
@@ -260,21 +255,36 @@
 
   const checked = {};
 
-  // Load the analysis produced on describe.html (page 4), if present
-  function loadAnalysis() {
+  function getCachedAnalysis() {
     const cached = sessionStorage.getItem('safestay_analysis');
-    if (!cached) return;
+    if (!cached) return null;
     try {
-      const analysis = JSON.parse(cached);
-      if (Array.isArray(analysis.evidence_checklist) && analysis.evidence_checklist.length) {
-        ITEMS = analysis.evidence_checklist;
-      }
-      if (analysis.detected_case) {
-        CASE_TYPE = analysis.detected_case;
-      }
+      return JSON.parse(cached);
     } catch (e) {
       console.warn('Bad cached analysis:', e);
+      return null;
     }
+  }
+
+  function mapTemplateItems(templates) {
+    return templates.map((item, index) => {
+      const templateId = item.template_id || item.id || index + 1;
+      const label = item.item_name || item.label || '';
+      return {
+        id: templateId,
+        template_id: item.template_id || null,
+        label,
+        required: item.is_required === 1 || item.is_required === true || item.required === true,
+        is_completed: false
+      };
+    });
+  }
+
+  function applyCheckedStateFromItems() {
+    Object.keys(checked).forEach((key) => delete checked[key]);
+    ITEMS.forEach((item) => {
+      checked[item.id] = !!item.is_completed;
+    });
   }
 
   function resolveDisplayText(key, fallback) {
@@ -352,8 +362,22 @@
     errBox.style.display = 'none';
 
     try {
-      // Confirm evidence files are on record via backend
-      await safeStayAPI.getEvidenceFiles(CASE_ID);
+      const items = ITEMS
+        .filter(item => item.checklist_id)
+        .map(item => ({
+          checklist_id: item.checklist_id,
+          is_completed: !!checked[item.id]
+        }));
+
+      if (!CASE_ID) {
+        throw new Error('No case selected');
+      }
+
+      if (items.length === 0) {
+        throw new Error('No saved checklist items are available for this case');
+      }
+
+      await safeStayAPI.updateChecklist(CASE_ID, items);
 
       btn.classList.add('saved');
       btn.textContent = window.t('evidence.saveSuccess');
@@ -372,23 +396,66 @@
 
   // ── Init ──────────────────────────────────────────────────────────────────
   async function init() {
-    loadAnalysis();
-    renderChecklist();
+    const cachedAnalysis = getCachedAnalysis();
+    if (cachedAnalysis && cachedAnalysis.detected_case) {
+      CASE_TYPE = cachedAnalysis.detected_case;
+    }
+
+    if (cachedAnalysis && Array.isArray(cachedAnalysis.evidence_checklist) && cachedAnalysis.evidence_checklist.length) {
+      ITEMS = mapTemplateItems(cachedAnalysis.evidence_checklist);
+      applyCheckedStateFromItems();
+      renderChecklist();
+    }
 
     // Try to load live case data from backend
-    try {
-      const caseData = await safeStayAPI.getCase(CASE_ID);
-      if (caseData) {
+    if (CASE_ID) {
+      try {
+        const response = await safeStayAPI.getCase(CASE_ID);
+        const caseData = response.case || {};
+        const savedChecklist = response.checklist || [];
+        const analysisData = response.analysis_data || {};
+
+        if (caseData.detected_case) {
+          CASE_TYPE = caseData.detected_case;
+        }
+
+        if (Array.isArray(savedChecklist) && savedChecklist.length) {
+          ITEMS = savedChecklist.map(item => ({
+            id: item.checklist_id,
+            checklist_id: item.checklist_id,
+            label: item.item_name,
+            required: false,
+            is_completed: item.is_completed === 1 || item.is_completed === true
+          }));
+        } else {
+          const backendTemplates = Array.isArray(analysisData.evidence_checklist)
+            ? analysisData.evidence_checklist
+            : [];
+          if (backendTemplates.length) {
+            ITEMS = mapTemplateItems(backendTemplates);
+          } else if (cachedAnalysis && Array.isArray(cachedAnalysis.evidence_checklist) && cachedAnalysis.evidence_checklist.length) {
+            ITEMS = mapTemplateItems(cachedAnalysis.evidence_checklist);
+          }
+        }
+
+        applyCheckedStateFromItems();
+        renderChecklist();
+
         document.getElementById('page-title').textContent = window.t('evidence.pageTitle');
         const detectedCaseValue = caseData.detected_case || CASE_TYPE;
         const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
         document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;
         document.getElementById('urgency-badge').textContent =
           (caseData.urgency_level || 'HIGH').toUpperCase();
+      } catch (e) {
+        // Backend unavailable – fall back to local templates/defaults
+        console.warn('Could not load case from backend:', e.message);
+        applyCheckedStateFromItems();
+        renderChecklist();
       }
-    } catch (e) {
-      // Backend unavailable – fall back to static defaults
-      console.warn('Could not load case from backend:', e.message);
+    } else {
+      applyCheckedStateFromItems();
+      renderChecklist();
     }
   }
 

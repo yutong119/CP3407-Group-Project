@@ -123,6 +123,12 @@ class SafeStayAPI {
     return this.request(`/cases/${caseId}`, 'DELETE');
   }
 
+  async updateChecklist(caseId, items) {
+    return this.request(`/cases/${caseId}/checklist`, 'PUT', {
+      items
+    });
+  }
+
   // ===== EVIDENCE ENDPOINTS =====
   async uploadEvidence(caseId, file, description = '') {
     const formData = new FormData();
