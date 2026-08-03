@@ -126,13 +126,27 @@ npm start
 ```
 
 #### 3. Frontend Setup
-- Update API_BASE_URL in `frontend/api.js` if needed
 - Open frontend files in a browser or serve with a simple HTTP server:
   ```bash
   # Using Python
   cd frontend
   python3 -m http.server 8000
   ```
+
+### Mobile/LAN Testing
+
+- `frontend/api.js` now auto-targets `http(s)://<current-host>:5001/api`, so desktop and phone can share the same backend host without manual edits.
+- Example local-network flow:
+  1. Run backend on your machine using port `5001`.
+  2. Serve frontend from the same machine (for example, `python3 -m http.server 8000`).
+  3. Open `http://<your-lan-ip>:8000` on your phone.
+  4. Ensure your phone and computer are on the same network.
+
+- Device-aware contact actions:
+  - Mobile devices use `tel:` when tapping phone contacts.
+  - Desktop shows a "Call from a mobile device" prompt with a one-click "Copy Number" action.
+  - Email-only contacts open `mailto:`.
+  - Website-only contacts open in a new `https` tab.
 
 ## API Documentation
 

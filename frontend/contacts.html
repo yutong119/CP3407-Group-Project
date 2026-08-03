@@ -37,6 +37,7 @@
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px;
+      text-decoration: none;
     }
     .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
     .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
@@ -72,7 +73,7 @@
       font-size: 13px; font-weight: 700;
       color: #E02424; margin-bottom: 4px;
     }
-    .ai-banner-text { font-size: 13px; color: #991B1B; line-height: 1.5; }
+    .ai-banner-text { font-size: 13px; color: #991B1B; line-height: 1.5; display: none; }
     .ai-banner-loading { font-size: 13px; color: #6B7280; }
 
     /* ── Contact list ── */
@@ -101,14 +102,103 @@
     .contact-number { font-size: 13px; color: #6B7280; margin-top: 2px; }
 
     .btn-call {
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      min-height: 44px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
       transition: background 0.2s;
     }
     .btn-call.success { background: #057A55 !important; }
+    .btn-call:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .contact-detail {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .call-toast {
+      margin: 10px 16px 0;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1E3A8A;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .call-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 16px;
+    }
+    .call-modal.open { display: flex; }
+    .call-modal-card {
+      width: min(100%, 420px);
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      padding: 16px;
+    }
+    .call-modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+    .call-modal-msg {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #374151;
+      overflow-wrap: anywhere;
+    }
+    .call-modal-number {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #1D4ED8;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    .call-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .call-modal-btn {
+      min-height: 44px;
+      border-radius: 10px;
+      border: none;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .call-modal-btn.primary {
+      background: #1A56DB;
+      color: #fff;
+    }
+    .call-modal-btn.outline {
+      background: #fff;
+      color: #374151;
+      border: 1px solid #D1D5DB;
+    }
 
     /* ── Map button ── */
     .map-wrap { margin: 4px 16px 0; }
@@ -157,7 +247,7 @@
 
   <!-- App bar -->
   <div class="appbar">
-    <a href="index.html" class="appbar-icon" style="text-decoration:none">🛡️</a>
+    <a href="index.html" class="appbar-icon">🛡️</a>
     <div>
       <div class="appbar-title">SafeStay</div>
       <div class="appbar-sub" id="case-subtitle" data-i18n="common.loading">Loading…</div>
@@ -177,12 +267,13 @@
     <div>
       <div class="ai-banner-label" id="banner-label" data-i18n="contacts.bannerLabel">Urgency: High — AI Recommendation</div>
       <div class="ai-banner-loading" id="banner-loading" data-i18n="contacts.bannerLoading">Analysing your situation…</div>
-      <div class="ai-banner-text" id="banner-text" style="display:none"></div>
+      <div class="ai-banner-text" id="banner-text"></div>
     </div>
   </div>
 
   <!-- Contact list -->
   <div class="contact-list" id="contact-list"></div>
+  <div class="call-toast" id="call-toast"></div>
 
   <!-- Map -->
   <div class="map-wrap">
@@ -206,6 +297,18 @@
     <div class="action-row"><div class="action-num">5</div><div class="action-text" data-i18n="contacts.action5">Report to your university (if needed)</div></div>
   </div>
 
+  <div class="call-modal" id="call-modal" role="dialog" aria-modal="true" aria-labelledby="call-modal-title">
+    <div class="call-modal-card">
+      <div class="call-modal-title" id="call-modal-title">Call from a mobile device</div>
+      <div class="call-modal-msg" id="call-modal-msg"></div>
+      <div class="call-modal-number" id="call-modal-number"></div>
+      <div class="call-modal-actions">
+        <button class="call-modal-btn primary" id="call-copy-btn" type="button">Copy Number</button>
+        <button class="call-modal-btn outline" id="call-close-btn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -220,6 +323,8 @@
   const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
   const CASE_LOC  = 'University Library, Singapore';
   let URGENCY   = 'High';
+  let LAST_FOCUSED_CALL_TRIGGER = null;
+  let CURRENT_MODAL_PHONE = '';
 
   // ── Contacts data ─────────────────────────────────────────────────────────
   // Fallback defaults — overwritten by recommended_contacts from the analysis if present
@@ -252,6 +357,90 @@
     return translated && translated !== key ? translated : fallback;
   }
 
+  function showToast(message) {
+    const toast = document.getElementById('call-toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2200);
+  }
+
+  function closeCallModal() {
+    const modal = document.getElementById('call-modal');
+    modal.classList.remove('open');
+    if (LAST_FOCUSED_CALL_TRIGGER) {
+      LAST_FOCUSED_CALL_TRIGGER.focus();
+    }
+  }
+
+  window.showCallMessage = function showCallMessage(message, phoneNumber) {
+    const modal = document.getElementById('call-modal');
+    const msg = document.getElementById('call-modal-msg');
+    const number = document.getElementById('call-modal-number');
+    const copyBtn = document.getElementById('call-copy-btn');
+
+    CURRENT_MODAL_PHONE = phoneNumber || '';
+    msg.textContent = message;
+    number.textContent = phoneNumber ? `Phone number: ${phoneNumber}` : '';
+    copyBtn.style.display = phoneNumber ? 'inline-flex' : 'none';
+    modal.classList.add('open');
+    document.getElementById('call-close-btn').focus();
+  };
+
+  function buildActionButton(contact, translatedName) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-call';
+
+    const hasNumber = !!(contact.number && String(contact.number).trim());
+    const hasEmail = !!(contact.email && String(contact.email).trim());
+    const hasWebsite = !!(contact.website && String(contact.website).trim());
+
+    if (hasNumber) {
+      btn.style.background = contact.color || '#1A56DB';
+      btn.textContent = 'Call';
+      btn.setAttribute('aria-label', `Call ${translatedName} at ${contact.number}`);
+      btn.addEventListener('click', () => {
+        LAST_FOCUSED_CALL_TRIGGER = btn;
+        window.handlePhoneCall(contact.number, translatedName);
+      });
+      return btn;
+    }
+
+    if (hasEmail) {
+      const link = document.createElement('a');
+      link.className = 'btn-call';
+      link.style.background = contact.color || '#1A56DB';
+      link.href = `mailto:${contact.email}`;
+      link.textContent = 'Email';
+      link.setAttribute('aria-label', `Email ${translatedName} at ${contact.email}`);
+      return link;
+    }
+
+    if (hasWebsite) {
+      const normalizedWebsite = /^https?:\/\//i.test(contact.website)
+        ? contact.website
+        : `https://${contact.website}`;
+      const link = document.createElement('a');
+      link.className = 'btn-call';
+      link.style.background = contact.color || '#1A56DB';
+      link.href = normalizedWebsite;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Visit';
+      link.setAttribute('aria-label', `Open website for ${translatedName}`);
+      return link;
+    }
+
+    btn.style.background = '#9CA3AF';
+    btn.textContent = 'N/A';
+    btn.disabled = true;
+    btn.setAttribute('aria-label', `No direct contact number available for ${translatedName}`);
+    return btn;
+  }
+
   // ── Render contacts ───────────────────────────────────────────────────────
   function renderContacts() {
     const list = document.getElementById('contact-list');
@@ -263,53 +452,31 @@
 
       const translatedName = resolveDisplayText('contactNames.' + contact.name, contact.name);
 
-      card.innerHTML = `
-        <div class="contact-icon-wrap" style="background:${contact.color}18">
-          ${contact.icon}
-        </div>
-        <div style="flex:1">
-          <div class="contact-name">${translatedName}</div>
-          <div class="contact-number">${contact.number}</div>
-        </div>
-        <button
-          class="btn-call"
-          id="call-btn-${contact.id}"
-          style="background:${contact.color}"
-          aria-label="Call ${translatedName}"
-          onclick="handleCall(${contact.id}, '${contact.number}', '${contact.color}')">
-          ${phoneIconSVG()}
-        </button>
-      `;
+      const icon = document.createElement('div');
+      icon.className = 'contact-icon-wrap';
+      icon.style.background = `${contact.color || '#1A56DB'}18`;
+      icon.textContent = contact.icon || '📞';
+
+      const body = document.createElement('div');
+      body.style.flex = '1';
+
+      const name = document.createElement('div');
+      name.className = 'contact-name';
+      name.textContent = translatedName;
+
+      const detail = document.createElement('div');
+      detail.className = 'contact-number contact-detail';
+      detail.textContent = contact.number || contact.email || contact.website || 'No direct contact detail';
+
+      body.appendChild(name);
+      body.appendChild(detail);
+
+      card.appendChild(icon);
+      card.appendChild(body);
+      card.appendChild(buildActionButton(contact, translatedName));
 
       list.appendChild(card);
     });
-  }
-
-  function phoneIconSVG() {
-    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.95 11.5a19.79 19.79 0 01-3.07-8.67A2 2 0 012.86 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"
-        stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-  }
-
-  function checkIconSVG() {
-    return `<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M3 9L7 13L15 5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>`;
-  }
-
-  function handleCall(id, number, color) {
-    const btn = document.getElementById('call-btn-' + id);
-    btn.innerHTML = checkIconSVG();
-    btn.style.background = '#057A55';
-
-    setTimeout(() => {
-      btn.innerHTML = phoneIconSVG();
-      btn.style.background = color;
-    }, 1500);
-
-    // Optionally trigger tel: link
-    // window.location.href = 'tel:' + number.replace(/\s/g, '');
   }
 
   // ── Map ───────────────────────────────────────────────────────────────────
@@ -347,14 +514,56 @@
 
   // ── Init ──────────────────────────────────────────────────────────────────
   async function init() {
+    document.getElementById('call-close-btn').addEventListener('click', closeCallModal);
+    document.getElementById('call-copy-btn').addEventListener('click', async () => {
+      const copyBtn = document.getElementById('call-copy-btn');
+      if (!CURRENT_MODAL_PHONE) {
+        showToast('No number available to copy.');
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(CURRENT_MODAL_PHONE);
+        const oldText = copyBtn.textContent;
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => {
+          copyBtn.textContent = oldText;
+        }, 1200);
+      } catch (e) {
+        showToast(`Could not copy automatically. Number: ${CURRENT_MODAL_PHONE}`);
+      }
+    });
+
+    document.getElementById('call-modal').addEventListener('click', (event) => {
+      if (event.target.id === 'call-modal') {
+        closeCallModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('call-modal');
+        if (modal.classList.contains('open')) {
+          closeCallModal();
+        }
+      }
+    });
+
     loadAnalysis();
     renderContacts();
     fetchAIRecommendation(); // fire and forget – non-blocking
 
     // Try to load live case data from backend
     try {
-      const caseData = await safeStayAPI.getCase(CASE_ID);
-      if (caseData) {
+      const response = await safeStayAPI.getCase(CASE_ID);
+      const caseData = response.case || {};
+      const analysisData = response.analysis_data || {};
+      if (Array.isArray(analysisData.recommended_contacts) && analysisData.recommended_contacts.length) {
+        CONTACTS = analysisData.recommended_contacts;
+        renderContacts();
+      }
+
+      if (caseData && Object.keys(caseData).length > 0) {
         const detectedCaseValue = caseData.detected_case || CASE_TYPE;
         const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
         document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;

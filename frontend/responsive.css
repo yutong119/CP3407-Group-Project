@@ -1,9 +1,35 @@
 /* SafeStay shared responsive improvements */
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 html, body { width: 100%; overflow-x: hidden; }
 img, svg, video, canvas { max-width: 100%; height: auto; }
 button, input, select, textarea { max-width: 100%; }
 a, button { -webkit-tap-highlight-color: transparent; }
+
+input, textarea, select {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+.btn,
+.btn-nav,
+.btn-submit,
+.btn-map,
+.btn-call,
+.btn-report,
+.btn-save,
+.btn-next,
+.tab,
+.auth-tab,
+.social-btn {
+  min-height: 44px;
+}
 
 /* Keep every page full width instead of locking it to a phone-sized column. */
 .app-wrapper {
@@ -164,6 +190,7 @@ nav .nav-brand {
   .ai-banner,
   .actions-box,
   .map-wrap,
+  .call-toast,
   .history-list,
   .menu-list,
   .info-card,

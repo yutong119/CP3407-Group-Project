@@ -1,7 +1,42 @@
 // SafeStay Frontend API Service
 // This file handles all API calls to the backend
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = (() => {
+  const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+  const host = window.location.hostname || 'localhost';
+  return `${protocol}//${host}:5001/api`;
+})();
+
+function isMobileDevice() {
+  return (
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && window.innerWidth <= 1024)
+  );
+}
+
+function handlePhoneCall(phoneNumber, contactName) {
+  if (!phoneNumber) {
+    if (typeof window.showCallMessage === 'function') {
+      window.showCallMessage('No phone number is available for this contact.');
+    }
+    return;
+  }
+
+  const normalizedNumber = String(phoneNumber).replace(/[^\d+*#]/g, '');
+
+  if (isMobileDevice()) {
+    window.location.href = `tel:${normalizedNumber}`;
+    return;
+  }
+
+  if (typeof window.showCallMessage === 'function') {
+    window.showCallMessage(
+      `To call ${contactName || 'this contact'} at ${phoneNumber}, please open SafeStay on your mobile phone.`,
+      phoneNumber,
+      contactName
+    );
+  }
+}
 
 class SafeStayAPI {
   constructor() {
@@ -185,3 +220,5 @@ class SafeStayAPI {
 
 // Create global instance
 const safeStayAPI = new SafeStayAPI();
+window.isMobileDevice = isMobileDevice;
+window.handlePhoneCall = handlePhoneCall;
