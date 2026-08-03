@@ -290,21 +290,17 @@
   <!-- Recommended Actions -->
   <div class="actions-box">
     <div class="actions-title" data-i18n="contacts.recommendedActions">Recommended Actions</div>
-    <div class="action-row"><div class="action-num">1</div><div class="action-text" data-i18n="contacts.action1">Contact the police immediately</div></div>
-    <div class="action-row"><div class="action-num">2</div><div class="action-text" data-i18n="contacts.action2">Block your bank cards and accounts</div></div>
-    <div class="action-row"><div class="action-num">3</div><div class="action-text" data-i18n="contacts.action3">Gather all possible evidence</div></div>
-    <div class="action-row"><div class="action-num">4</div><div class="action-text" data-i18n="contacts.action4">Check CCTV around the area</div></div>
-    <div class="action-row"><div class="action-num">5</div><div class="action-text" data-i18n="contacts.action5">Report to your university (if needed)</div></div>
+    <div id="actions-list"></div>
   </div>
 
   <div class="call-modal" id="call-modal" role="dialog" aria-modal="true" aria-labelledby="call-modal-title">
     <div class="call-modal-card">
-      <div class="call-modal-title" id="call-modal-title">Call from a mobile device</div>
+      <div class="call-modal-title" id="call-modal-title" data-i18n="contacts.callModalTitle">Call from a mobile device</div>
       <div class="call-modal-msg" id="call-modal-msg"></div>
       <div class="call-modal-number" id="call-modal-number"></div>
       <div class="call-modal-actions">
-        <button class="call-modal-btn primary" id="call-copy-btn" type="button">Copy Number</button>
-        <button class="call-modal-btn outline" id="call-close-btn" type="button">Close</button>
+        <button class="call-modal-btn primary" id="call-copy-btn" type="button" data-i18n="contacts.copyNumber">Copy Number</button>
+        <button class="call-modal-btn outline" id="call-close-btn" type="button" data-i18n="contacts.close">Close</button>
       </div>
     </div>
   </div>
@@ -312,19 +308,18 @@
 </div>
 
 <script>
-  // ── Config ────────────────────────────────────────────────────────────────
-  const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
-
   // Case context – case_id comes from the URL (?case_id=...), the rest are
   // fallback defaults used only if no analysis/case data is available yet.
   const params = new URLSearchParams(window.location.search);
   const CASE_ID   = params.get('case_id') || 'THF-2024-00023';
   let CASE_TYPE = 'Theft';
-  const CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
-  const CASE_LOC  = 'University Library, Singapore';
+  let CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
+  let CASE_LOC  = 'University Library, Singapore';
   let URGENCY   = 'High';
   let LAST_FOCUSED_CALL_TRIGGER = null;
   let CURRENT_MODAL_PHONE = '';
+  let RECOMMENDED_ACTIONS = [];
+  let HAS_AI_ACTIONS = false;
 
   // ── Contacts data ─────────────────────────────────────────────────────────
   // Fallback defaults — overwritten by recommended_contacts from the analysis if present
@@ -357,6 +352,39 @@
     return translated && translated !== key ? translated : fallback;
   }
 
+  function getFallbackActions() {
+    return [
+      window.t('contacts.action1'),
+      window.t('contacts.action2'),
+      window.t('contacts.action3'),
+      window.t('contacts.action4'),
+      window.t('contacts.action5')
+    ];
+  }
+
+  function renderRecommendedActions(actions, source = 'fallback') {
+    const list = document.getElementById('actions-list');
+    const safeActions = (Array.isArray(actions) ? actions : [])
+      .map(item => (typeof item === 'string' ? item.trim() : ''))
+      .filter(Boolean);
+
+    const finalActions = safeActions.length ? safeActions : getFallbackActions();
+    RECOMMENDED_ACTIONS = finalActions;
+    HAS_AI_ACTIONS = source === 'ai' && safeActions.length > 0;
+
+    list.innerHTML = '';
+    finalActions.forEach((text, index) => {
+      const row = document.createElement('div');
+      row.className = 'action-row';
+      row.innerHTML = `
+        <div class="action-num">${index + 1}</div>
+        <div class="action-text"></div>
+      `;
+      row.querySelector('.action-text').textContent = text;
+      list.appendChild(row);
+    });
+  }
+
   function showToast(message) {
     const toast = document.getElementById('call-toast');
     toast.textContent = message;
@@ -383,7 +411,9 @@
 
     CURRENT_MODAL_PHONE = phoneNumber || '';
     msg.textContent = message;
-    number.textContent = phoneNumber ? `Phone number: ${phoneNumber}` : '';
+    number.textContent = phoneNumber
+      ? window.t('contacts.phoneNumberLabel', { phone: phoneNumber })
+      : '';
     copyBtn.style.display = phoneNumber ? 'inline-flex' : 'none';
     modal.classList.add('open');
     document.getElementById('call-close-btn').focus();
@@ -400,8 +430,8 @@
 
     if (hasNumber) {
       btn.style.background = contact.color || '#1A56DB';
-      btn.textContent = 'Call';
-      btn.setAttribute('aria-label', `Call ${translatedName} at ${contact.number}`);
+      btn.textContent = window.t('contacts.buttonCall');
+      btn.setAttribute('aria-label', window.t('contacts.callAria', { name: translatedName }));
       btn.addEventListener('click', () => {
         LAST_FOCUSED_CALL_TRIGGER = btn;
         window.handlePhoneCall(contact.number, translatedName);
@@ -414,7 +444,7 @@
       link.className = 'btn-call';
       link.style.background = contact.color || '#1A56DB';
       link.href = `mailto:${contact.email}`;
-      link.textContent = 'Email';
+      link.textContent = window.t('contacts.buttonEmail');
       link.setAttribute('aria-label', `Email ${translatedName} at ${contact.email}`);
       return link;
     }
@@ -429,7 +459,7 @@
       link.href = normalizedWebsite;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
-      link.textContent = 'Visit';
+      link.textContent = window.t('contacts.buttonVisit');
       link.setAttribute('aria-label', `Open website for ${translatedName}`);
       return link;
     }
@@ -437,7 +467,7 @@
     btn.style.background = '#9CA3AF';
     btn.textContent = 'N/A';
     btn.disabled = true;
-    btn.setAttribute('aria-label', `No direct contact number available for ${translatedName}`);
+    btn.setAttribute('aria-label', window.t('contacts.noContactDetailAria', { name: translatedName }));
     return btn;
   }
 
@@ -466,7 +496,7 @@
 
       const detail = document.createElement('div');
       detail.className = 'contact-number contact-detail';
-      detail.textContent = contact.number || contact.email || contact.website || 'No direct contact detail';
+      detail.textContent = contact.number || contact.email || contact.website || window.t('contacts.noDirectContactDetail');
 
       body.appendChild(name);
       body.appendChild(detail);
@@ -485,30 +515,36 @@
     window.open('https://www.google.com/maps/search/?api=1&query=' + query, '_blank');
   }
 
-  // ── AI recommendation ─────────────────────────────────────────────────────
-  async function fetchAIRecommendation() {
-    const prompt = `A student just had a ${CASE_TYPE} at ${CASE_LOC}. Description: ${CASE_DESC}. Urgency: ${URGENCY}. In ONE sentence (max 20 words), which contact should they call FIRST and why?`;
+  function renderPriorityBanner(message) {
+    document.getElementById('banner-loading').style.display = 'none';
+    const textEl = document.getElementById('banner-text');
+    textEl.textContent = (message || '').trim() || window.t('contacts.bannerFallback');
+    textEl.style.display = 'block';
+  }
+
+  async function refreshAiActionsFromBackend(description, location) {
+    if (!description || !description.trim()) {
+      return;
+    }
 
     try {
-      const res = await fetch(CLAUDE_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.map(b => b.text || '').join('') || window.t('contacts.bannerFallback');
+      const language = typeof window.getCurrentLanguage === 'function'
+        ? window.getCurrentLanguage()
+        : 'en';
+      const analyzeResponse = await safeStayAPI.analyzeCase(description, location, language);
+      const analysis = analyzeResponse.analysis || analyzeResponse;
 
-      document.getElementById('banner-loading').style.display = 'none';
-      document.getElementById('banner-text').textContent = text.trim();
-      document.getElementById('banner-text').style.display = 'block';
+      if (Array.isArray(analysis.recommended_actions) && analysis.recommended_actions.length) {
+        renderRecommendedActions(analysis.recommended_actions, 'ai');
+      }
+      if (Array.isArray(analysis.recommended_contacts) && analysis.recommended_contacts.length) {
+        CONTACTS = analysis.recommended_contacts;
+        renderContacts();
+      }
+      renderPriorityBanner(analysis.priority_message);
     } catch (e) {
-      document.getElementById('banner-loading').style.display = 'none';
-      document.getElementById('banner-text').textContent = window.t('contacts.bannerFallback');
-      document.getElementById('banner-text').style.display = 'block';
+      renderPriorityBanner('');
+      console.warn('Could not refresh AI actions from backend:', e.message);
     }
   }
 
@@ -518,19 +554,19 @@
     document.getElementById('call-copy-btn').addEventListener('click', async () => {
       const copyBtn = document.getElementById('call-copy-btn');
       if (!CURRENT_MODAL_PHONE) {
-        showToast('No number available to copy.');
+        showToast(window.t('contacts.noNumberToCopy'));
         return;
       }
 
       try {
         await navigator.clipboard.writeText(CURRENT_MODAL_PHONE);
         const oldText = copyBtn.textContent;
-        copyBtn.textContent = 'Copied';
+        copyBtn.textContent = window.t('contacts.copied');
         setTimeout(() => {
           copyBtn.textContent = oldText;
         }, 1200);
       } catch (e) {
-        showToast(`Could not copy automatically. Number: ${CURRENT_MODAL_PHONE}`);
+        showToast(window.t('contacts.copyFailed', { phone: CURRENT_MODAL_PHONE }));
       }
     });
 
@@ -551,7 +587,21 @@
 
     loadAnalysis();
     renderContacts();
-    fetchAIRecommendation(); // fire and forget – non-blocking
+    renderRecommendedActions(RECOMMENDED_ACTIONS, HAS_AI_ACTIONS ? 'ai' : 'fallback');
+    renderPriorityBanner('');
+
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (cached) {
+      try {
+        const analysis = JSON.parse(cached);
+        if (Array.isArray(analysis.recommended_actions) && analysis.recommended_actions.length) {
+          renderRecommendedActions(analysis.recommended_actions, 'ai');
+        }
+        renderPriorityBanner(analysis.priority_message);
+      } catch (e) {
+        console.warn('Bad cached analysis while reading actions:', e);
+      }
+    }
 
     // Try to load live case data from backend
     try {
@@ -564,6 +614,9 @@
       }
 
       if (caseData && Object.keys(caseData).length > 0) {
+        CASE_DESC = caseData.description || CASE_DESC;
+        CASE_LOC = caseData.location || CASE_LOC;
+
         const detectedCaseValue = caseData.detected_case || CASE_TYPE;
         const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
         document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;
@@ -571,13 +624,34 @@
         document.getElementById('urgency-badge').textContent = urg;
         document.getElementById('banner-label').textContent =
           window.t('contacts.bannerLabel', { urgency: caseData.urgency_level || URGENCY });
+
+        if (Array.isArray(analysisData.recommended_actions) && analysisData.recommended_actions.length) {
+          renderRecommendedActions(analysisData.recommended_actions, 'fallback');
+        }
+
+        await refreshAiActionsFromBackend(CASE_DESC, CASE_LOC);
       }
     } catch (e) {
       // Backend unavailable – fall back to static defaults
       document.getElementById('case-subtitle').textContent = CASE_TYPE + ' · ' + CASE_ID;
+      renderRecommendedActions(RECOMMENDED_ACTIONS, HAS_AI_ACTIONS ? 'ai' : 'fallback');
+      renderPriorityBanner('');
       console.warn('Could not load case from backend:', e.message);
     }
   }
+
+  document.addEventListener('safestay:language-ready', () => {
+    renderContacts();
+    if (HAS_AI_ACTIONS) {
+      renderRecommendedActions(RECOMMENDED_ACTIONS, 'ai');
+    } else {
+      renderRecommendedActions([], 'fallback');
+    }
+    const copyBtn = document.getElementById('call-copy-btn');
+    if (copyBtn && copyBtn.textContent !== window.t('contacts.copied')) {
+      copyBtn.textContent = window.t('contacts.copyNumber');
+    }
+  });
 
   init();
 </script>

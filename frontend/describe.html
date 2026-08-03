@@ -388,7 +388,11 @@
       const locationText = document.getElementById('location-text').textContent;
 
       // 1. Run AI analysis on the description + location
-      const analyzeResponse = await safeStayAPI.analyzeCase(description, locationText);
+      const analyzeResponse = await safeStayAPI.analyzeCase(
+        description,
+        locationText,
+        typeof window.getCurrentLanguage === 'function' ? window.getCurrentLanguage() : 'en'
+      );
       // analyzeCase returns { success, analysis: {...} } — unwrap it
       const analysis = analyzeResponse.analysis || analyzeResponse;
 

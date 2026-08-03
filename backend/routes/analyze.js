@@ -1,5 +1,9 @@
 const express = require('express');
-const { analyzeIncident, generateDraftMessage } = require('../services/analysisService');
+const {
+  analyzeIncident,
+  generateDraftMessage,
+  generateRecommendedActionsWithOpenAI
+} = require('../services/analysisService');
 const { getGuidanceSteps, getChecklistTemplates, getAuthorityContacts } = require('../services/templateService');
 
 const router = express.Router();
@@ -8,7 +12,7 @@ router.post('/', async (req, res) => {
   let connection;
 
   try {
-    const { description, location } = req.body;
+    const { description, location, preferredLanguage } = req.body;
 
     if (!description || !description.trim()) {
       return res.status(400).json({
@@ -25,6 +29,12 @@ router.post('/', async (req, res) => {
     const guidanceSteps = await getGuidanceSteps(connection, analysis.category_id);
     const checklist = await getChecklistTemplates(connection, analysis.category_id);
     const contacts = await getAuthorityContacts(connection, analysis.category_id);
+    const aiActionPayload = await generateRecommendedActionsWithOpenAI(
+      description,
+      location,
+      analysis,
+      preferredLanguage
+    );
 
     connection.release();
 
@@ -35,7 +45,10 @@ router.post('/', async (req, res) => {
       analysis: {
         ...analysis,
         location: location || null,
-        recommended_actions: toArray(guidanceSteps),
+        recommended_actions: toArray(aiActionPayload?.recommended_actions).length
+          ? toArray(aiActionPayload.recommended_actions)
+          : toArray(guidanceSteps),
+        priority_message: aiActionPayload?.priority_message || null,
         evidence_checklist: toArray(checklist),
         recommended_contacts: toArray(contacts),
         draft_message: generateDraftMessage(analysis, description, location)

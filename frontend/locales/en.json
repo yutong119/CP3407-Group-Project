@@ -243,7 +243,22 @@
     "action3": "Gather all possible evidence",
     "action4": "Check CCTV around the area",
     "action5": "Report to your university (if needed)",
-    "callAria": "Call {name}"
+    "callAria": "Call {name}",
+    "buttonCall": "Call",
+    "buttonEmail": "Email",
+    "buttonVisit": "Visit",
+    "copyNumber": "Copy Number",
+    "close": "Close",
+    "copied": "Copied",
+    "noNumberToCopy": "No number available to copy.",
+    "copyFailed": "Could not copy automatically. Number: {phone}",
+    "noPhoneNumberMessage": "No phone number is available for this contact.",
+    "callModalTitle": "Call from a mobile device",
+    "callMobileMessage": "To call {name} at {phone}, please open SafeStay on your mobile phone.",
+    "thisContact": "this contact",
+    "phoneNumberLabel": "Phone number: {phone}",
+    "noDirectContactDetail": "No direct contact detail",
+    "noContactDetailAria": "No direct contact detail available for {name}"
   },
   "evidence": {
     "pageTitle": "Theft Evidence Checklist",

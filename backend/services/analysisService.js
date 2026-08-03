@@ -27,7 +27,13 @@ function normalizeProbabilityValue(probability, fallbackProbability) {
 function detectIncident(description) {
   const text = (description || '').toLowerCase();
 
-  if (text.includes('passport') || text.includes('travel document')) {
+  if (
+    text.includes('passport') ||
+    text.includes('travel document') ||
+    text.includes('护照') ||
+    text.includes('パスポート') ||
+    text.includes('passeport')
+  ) {
     return {
       category_id: 2,
       detected_case: 'Lost Passport',
@@ -41,7 +47,12 @@ function detectIncident(description) {
     text.includes('fraud') ||
     text.includes('phishing') ||
     text.includes('fake') ||
-    text.includes('transfer money')
+    text.includes('transfer money') ||
+    text.includes('诈骗') ||
+    text.includes('欺诈') ||
+    text.includes('詐欺') ||
+    text.includes('arnaque') ||
+    text.includes('fraude')
   ) {
     return {
       category_id: 3,
@@ -56,7 +67,14 @@ function detectIncident(description) {
     text.includes('deposit') ||
     text.includes('rental') ||
     text.includes('rent') ||
-    text.includes('contract')
+    text.includes('contract') ||
+    text.includes('房东') ||
+    text.includes('押金') ||
+    text.includes('租房') ||
+    text.includes('賃貸') ||
+    text.includes('敷金') ||
+    text.includes('loyer') ||
+    text.includes('location')
   ) {
     return {
       category_id: 4,
@@ -72,7 +90,15 @@ function detectIncident(description) {
     text.includes('sick') ||
     text.includes('hospital') ||
     text.includes('ambulance') ||
-    text.includes('pain')
+    text.includes('pain') ||
+    text.includes('受伤') ||
+    text.includes('医院') ||
+    text.includes('救护车') ||
+    text.includes('けが') ||
+    text.includes('病院') ||
+    text.includes('救急車') ||
+    text.includes('urgence') ||
+    text.includes('hôpital')
   ) {
     return {
       category_id: 5,
@@ -88,7 +114,15 @@ function detectIncident(description) {
     text.includes('robbed') ||
     text.includes('bag') ||
     text.includes('wallet') ||
-    text.includes('phone')
+    text.includes('phone') ||
+    text.includes('被偷') ||
+    text.includes('盗窃') ||
+    text.includes('钱包') ||
+    text.includes('盗まれ') ||
+    text.includes('窃盗') ||
+    text.includes('財布') ||
+    text.includes('vol') ||
+    text.includes('sac')
   ) {
     return {
       category_id: 1,
@@ -164,7 +198,7 @@ async function classifyWithOpenAI(description) {
       messages: [
         {
           role: 'system',
-          content: 'Classify the incident description and return valid JSON with only the keys category_id, detected_case, urgency_level, probability, draft_message. Use the allowed values: category_id must be 1, 2, 3, 4, 5, or 6; detected_case must be Theft, Lost Passport, Scam / Online Fraud, Rental Dispute, Medical Emergency, or Other Issues; urgency_level must be Low, Medium, or High. Do not include any other fields.'
+          content: 'Classify the incident description (it may be written in any language) and return valid JSON with only the keys category_id, detected_case, urgency_level, probability, draft_message. Use the allowed values: category_id must be 1, 2, 3, 4, 5, or 6; detected_case must be Theft, Lost Passport, Scam / Online Fraud, Rental Dispute, Medical Emergency, or Other Issues; urgency_level must be Low, Medium, or High. Do not include any other fields.'
         },
         {
           role: 'user',
@@ -184,6 +218,68 @@ async function classifyWithOpenAI(description) {
     return normalizeAnalysis(parsed, fallback);
   } catch (error) {
     console.warn('OpenAI classification failed, falling back to rule-based analysis:', error.message);
+    return null;
+  }
+}
+
+async function generateRecommendedActionsWithOpenAI(description, location, analysis, preferredLanguage) {
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey || !apiKey.trim()) {
+    return null;
+  }
+
+  try {
+    const client = new OpenAI({ apiKey });
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a student safety incident assistant. Return valid JSON with exactly two keys: recommended_actions (array of 3 to 5 concise strings) and priority_message (one concise sentence). Keep responses practical and non-legal. Use the user language specified by preferredLanguage when possible; otherwise use the same language as the incident description. Do not add any keys.'
+        },
+        {
+          role: 'user',
+          content: JSON.stringify({
+            preferredLanguage,
+            description,
+            location,
+            detected_case: analysis?.detected_case,
+            urgency_level: analysis?.urgency_level
+          })
+        }
+      ]
+    });
+
+    const content = response?.choices?.[0]?.message?.content;
+    if (!content) {
+      return null;
+    }
+
+    const parsed = JSON.parse(content);
+    const actions = Array.isArray(parsed.recommended_actions)
+      ? parsed.recommended_actions
+          .map((item) => (typeof item === 'string' ? item.trim() : ''))
+          .filter(Boolean)
+          .slice(0, 5)
+      : [];
+
+    const priorityMessage = typeof parsed.priority_message === 'string'
+      ? parsed.priority_message.trim()
+      : '';
+
+    if (!actions.length && !priorityMessage) {
+      return null;
+    }
+
+    return {
+      recommended_actions: actions,
+      priority_message: priorityMessage || null
+    };
+  } catch (error) {
+    console.warn('OpenAI action generation failed, falling back to template actions:', error.message);
     return null;
   }
 }
@@ -228,5 +324,6 @@ Please advise me on the next steps and any documents or evidence I should prepar
 module.exports = {
   detectIncident,
   analyzeIncident,
-  generateDraftMessage
+  generateDraftMessage,
+  generateRecommendedActionsWithOpenAI
 };

@@ -243,7 +243,22 @@
     "action3": "できるだけ多くの証拠を集める",
     "action4": "周辺の CCTV を確認する",
     "action5": "必要に応じて大学へ報告する",
-    "callAria": "{name} に電話する"
+    "callAria": "{name} に電話する",
+    "buttonCall": "電話",
+    "buttonEmail": "メール",
+    "buttonVisit": "表示",
+    "copyNumber": "番号をコピー",
+    "close": "閉じる",
+    "copied": "コピーしました",
+    "noNumberToCopy": "コピーできる番号がありません。",
+    "copyFailed": "自動コピーできませんでした。番号: {phone}",
+    "noPhoneNumberMessage": "この連絡先には電話番号がありません。",
+    "callModalTitle": "携帯端末で電話してください",
+    "callMobileMessage": "{name}（{phone}）に電話するには、携帯端末で SafeStay を開いてください。",
+    "thisContact": "この連絡先",
+    "phoneNumberLabel": "電話番号: {phone}",
+    "noDirectContactDetail": "直接の連絡先情報がありません",
+    "noContactDetailAria": "{name} には直接の連絡先情報がありません"
   },
   "evidence": {
     "pageTitle": "窃盗証拠チェックリスト",

@@ -243,7 +243,22 @@
     "action3": "Rassembler autant de preuves que possible",
     "action4": "Vérifier les caméras de surveillance autour de la zone",
     "action5": "Signaler à votre université si nécessaire",
-    "callAria": "Appeler {name}"
+    "callAria": "Appeler {name}",
+    "buttonCall": "Appeler",
+    "buttonEmail": "E-mail",
+    "buttonVisit": "Visiter",
+    "copyNumber": "Copier le numéro",
+    "close": "Fermer",
+    "copied": "Copié",
+    "noNumberToCopy": "Aucun numéro à copier.",
+    "copyFailed": "Copie automatique impossible. Numéro : {phone}",
+    "noPhoneNumberMessage": "Aucun numéro de téléphone n’est disponible pour ce contact.",
+    "callModalTitle": "Appelez depuis un appareil mobile",
+    "callMobileMessage": "Pour appeler {name} au {phone}, veuillez ouvrir SafeStay sur votre téléphone mobile.",
+    "thisContact": "ce contact",
+    "phoneNumberLabel": "Numéro de téléphone : {phone}",
+    "noDirectContactDetail": "Aucun contact direct disponible",
+    "noContactDetailAria": "Aucun contact direct disponible pour {name}"
   },
   "evidence": {
     "pageTitle": "Liste des preuves de vol",

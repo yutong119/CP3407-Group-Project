@@ -243,7 +243,22 @@
     "action3": "收集尽可能多的证据",
     "action4": "查看周边闭路电视",
     "action5": "如有需要，向您的大学报告",
-    "callAria": "拨打 {name}"
+    "callAria": "拨打 {name}",
+    "buttonCall": "拨打",
+    "buttonEmail": "邮件",
+    "buttonVisit": "访问",
+    "copyNumber": "复制号码",
+    "close": "关闭",
+    "copied": "已复制",
+    "noNumberToCopy": "没有可复制的号码。",
+    "copyFailed": "无法自动复制。号码：{phone}",
+    "noPhoneNumberMessage": "该联系人暂无电话号码。",
+    "callModalTitle": "请在手机上拨打",
+    "callMobileMessage": "要拨打 {name}（{phone}），请在手机上打开 SafeStay。",
+    "thisContact": "该联系人",
+    "phoneNumberLabel": "电话号码：{phone}",
+    "noDirectContactDetail": "暂无直接联系方式",
+    "noContactDetailAria": "{name} 暂无直接联系方式"
   },
   "evidence": {
     "pageTitle": "盗窃证据清单",

@@ -15,9 +15,13 @@ function isMobileDevice() {
 }
 
 function handlePhoneCall(phoneNumber, contactName) {
+  const t = typeof window.t === 'function' ? window.t : null;
+
   if (!phoneNumber) {
     if (typeof window.showCallMessage === 'function') {
-      window.showCallMessage('No phone number is available for this contact.');
+      window.showCallMessage(
+        t ? t('contacts.noPhoneNumberMessage') : 'No phone number is available for this contact.'
+      );
     }
     return;
   }
@@ -31,7 +35,12 @@ function handlePhoneCall(phoneNumber, contactName) {
 
   if (typeof window.showCallMessage === 'function') {
     window.showCallMessage(
-      `To call ${contactName || 'this contact'} at ${phoneNumber}, please open SafeStay on your mobile phone.`,
+      t
+        ? t('contacts.callMobileMessage', {
+            name: contactName || (t('contacts.thisContact') || 'this contact'),
+            phone: phoneNumber
+          })
+        : `To call ${contactName || 'this contact'} at ${phoneNumber}, please open SafeStay on your mobile phone.`,
       phoneNumber,
       contactName
     );
@@ -204,8 +213,12 @@ class SafeStayAPI {
   }
 
   // ===== ANALYSIS ENDPOINT =====
-  async analyzeCase(description, location) {
-    return this.request('/analyze', 'POST', { description, location });
+  async analyzeCase(description, location, preferredLanguage = null) {
+    return this.request('/analyze', 'POST', {
+      description,
+      location,
+      preferredLanguage
+    });
   }
 
   // ===== CATEGORY ENDPOINTS =====
