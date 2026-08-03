@@ -26,6 +26,7 @@
     --gray-900:   #111827;
     --white:      #FFFFFF;
     --shadow-sm:  0 1px 3px rgba(0,0,0,.08);
+    --shadow-md:  0 6px 14px rgba(17,24,39,.12);
   }
 
   body {
@@ -290,6 +291,20 @@
     margin-bottom: 14px;
   }
 
+  .js-motion .fade-in-card {
+    opacity: 0;
+    transform: translateY(20px);
+    will-change: opacity, transform;
+    transition:
+      opacity 300ms ease-out var(--fade-delay, 0ms),
+      transform 300ms ease-out var(--fade-delay, 0ms);
+  }
+
+  .js-motion.page-loaded .fade-in-card {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   /* BUTTONS */
   .result-btns {
     display: grid;
@@ -306,10 +321,13 @@
     border: none;
     font-family: inherit;
     text-align: center;
-    transition: opacity .15s, transform .1s;
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out, opacity 200ms ease-out;
   }
-  .btn-result:active { transform: scale(.97); }
-  .btn-result:hover  { opacity: .88; }
+  .btn-result:hover,
+  .btn-result:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
   .btn-result.outline {
     background: var(--white);
     border: 1px solid var(--gray-200);
@@ -334,9 +352,48 @@
     text-align: center;
     text-decoration: none;
     display: block;
-    transition: background .15s;
+    transition: background 200ms ease-out, transform 200ms ease-out, box-shadow 200ms ease-out;
   }
-  .btn-back:hover { background: var(--gray-50); }
+  .btn-back:hover,
+  .btn-back:focus-visible {
+    background: var(--gray-50);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-report {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  }
+  .btn-report:hover:not(:disabled),
+  .btn-report:focus-visible:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-motion .fade-in-card,
+    .js-motion.page-loaded .fade-in-card {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+
+    .btn-result,
+    .btn-back,
+    .btn-report {
+      transition: none;
+    }
+
+    .btn-result:hover,
+    .btn-result:focus-visible,
+    .btn-back:hover,
+    .btn-back:focus-visible,
+    .btn-report:hover,
+    .btn-report:focus-visible {
+      transform: none;
+      box-shadow: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -366,7 +423,7 @@
   <h1 data-i18n="result.analysisResult">Analysis Result</h1>
 
   <!-- Detected Case -->
-  <div class="detected-card">
+  <div class="detected-card fade-in-card" style="--fade-delay: 0ms;">
     <div>
       <div class="detected-label" data-i18n="result.detectedCase">Detected Case</div>
       <div class="detected-type" id="detected-type">Loading…</div>
@@ -376,7 +433,7 @@
   </div>
 
   <!-- Urgency Level -->
-  <div class="urgency-card medium" id="urgency-card">
+  <div class="urgency-card medium fade-in-card" id="urgency-card" style="--fade-delay: 100ms;">
     <div class="urgency-icon">⏳</div>
     <div>
       <div class="urgency-title" data-i18n="result.urgencyLevel">Urgency Level</div>
@@ -389,7 +446,7 @@
   <div id="error-banner" class="result-error-banner"></div>
 
   <!-- Recommended Actions -->
-  <div class="actions-card">
+  <div class="actions-card fade-in-card" style="--fade-delay: 200ms;">
     <h3 data-i18n="result.recommendedActions">Recommended Actions</h3>
     <div class="action-item">
       <div class="action-num">•</div>
@@ -397,7 +454,7 @@
     </div>
   </div>
 
-  <div class="report-card" id="formal-report">
+  <div class="report-card fade-in-card" id="formal-report" style="--fade-delay: 300ms;">
     <div class="report-title">Generate Formal Report</div>
     <div class="report-subtitle">Create a structured incident report using your case details, evidence checklist, recommended actions, and contacts.</div>
     <div class="report-actions">
@@ -413,13 +470,13 @@
 
   <!-- CTA Buttons -->
   <div class="result-btns">
-    <button class="btn-result outline" id="checklist-btn" data-i18n="result.viewChecklist">📋 View Checklist</button>
-    <button class="btn-result primary" id="contacts-btn" data-i18n="result.viewContacts">📞 View Contacts</button>
+    <button class="btn-result outline fade-in-card" style="--fade-delay: 400ms;" id="checklist-btn" data-i18n="result.viewChecklist">📋 View Checklist</button>
+    <button class="btn-result primary fade-in-card" style="--fade-delay: 500ms;" id="contacts-btn" data-i18n="result.viewContacts">📞 View Contacts</button>
   </div>
 
-  <a class="btn-back case-details-link" href="#" id="case-details-btn" data-i18n="result.viewCaseDetails">📁 View Full Case Details</a>
+  <a class="btn-back case-details-link fade-in-card" style="--fade-delay: 600ms;" href="#" id="case-details-btn" data-i18n="result.viewCaseDetails">📁 View Full Case Details</a>
 
-  <a class="btn-back" href="index.html" data-i18n="result.backHome">← Back to Home</a>
+  <a class="btn-back fade-in-card" style="--fade-delay: 700ms;" href="index.html" data-i18n="result.backHome">← Back to Home</a>
 
 </div>
 
@@ -990,7 +1047,20 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', loadCaseResult);
+  function initEntranceAnimations() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    document.body.classList.add('js-motion');
+    requestAnimationFrame(() => {
+      document.body.classList.add('page-loaded');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initEntranceAnimations();
+    loadCaseResult();
+  });
 </script>
 
 </body>
