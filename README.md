@@ -1,40 +1,79 @@
 # SafeStay - Student Incident Reporting Platform
+**Supervisior:** Dr. Da Sheng Liu
 
 ## Project Overview
 
-SafeStay is a web application designed to help international students report and manage various incidents such as theft, fraud, rental disputes, medical emergencies, and other issues. The platform includes case management, evidence file uploads, checklist tracking, and case analysis features.
+SafeStay is a full-stack web application designed to help international students report, analyse and manage common incidents such as theft, fraud, rental disputes, passport loss, medical emergencies and personal safety concerns. The platform provides multilingual support, AI-assisted incident analysis, persistent evidence management, authority recommendations and case tracking throughout the entire reporting process.
+
+## Team Members
+- Group 3
+- Frontend: [Sin Nather Paing - 14753575]
+- Backend: [Yutong Ji - 14795504]
+- Database: [Nang Laung Phoung - 14892210]
+
+## Documentation
+Complete project documentation is available on GitHub Pages.
+Includes:
+- Home page introducation
+- Design (UI prototype, ERD diagram, Architecture diagram)
+- Implementation
+- Testing
+- Development Tools
+
+GitHub Pages:
+https://yutong119.github.io/CP3407-Group-Project/
 
 ## Project Structure
 
 ```
 CP3407-groupproject/
-├── frontend/                 # Frontend UI (HTML/CSS/JavaScript)
-│   ├── index.html           # Homepage
-│   ├── login.html           # Login/Registration page
-│   ├── describe.html        # Case description form
-│   ├── result.html          # Case analysis results
-│   └── api.js               # API integration service
+├── frontend/                     # Frontend web application (HTML/CSS/JavaScript)
+│   ├── index.html                # Homepage
+│   ├── login.html                # Login / Registration
+│   ├── describe.html             # Incident description
+│   ├── result.html               # Analysis result
+│   ├── history.html              # Case history
+│   ├── case_details.html         # Case details
+│   ├── evidence.html             # Evidence checklist
+│   ├── contacts.html             # Emergency contacts
+│   ├── profile.html              # User profile
+│   ├── language.html             # Language settings
+│   ├── api.js                    # Frontend API service
+│   └── i18n.js                   # Internationalisation
 │
-├── backend/                 # Node.js/Express API Server
-│   ├── server.js            # Main server file
-│   ├── package.json         # Dependencies
-│   ├── .env.example         # Environment template
-│   ├── README.md            # Backend documentation
+├── backend/                      # Node.js / Express backend
+│   ├── server.js                 # Main server
+│   ├── package.json              # Backend dependencies
+│   ├── .env.example              # Environment template
+│   ├── README.md                 # Backend setup guide
 │   ├── middleware/
-│   │   └── auth.js          # JWT authentication
-│   └── routes/
-│       ├── auth.js          # Authentication endpoints
-│       ├── users.js         # User management
-│       ├── cases.js         # Case CRUD operations
-│       ├── evidence.js      # File upload handling
-│       └── categories.js    # Case categories
+│   │   └── auth.js               # JWT authentication
+│   ├── routes/                   # REST API endpoints
+│   └── services/                 # Business logic
 │
-├── database/
-│   └── database.sql         # MySQL database schema
+├── database/                     # Database resources
+│   ├── database.sql              # MySQL schema
+│   ├── ERD.md                    # Database design
+│   └── DATA_DICTIONARY.md        # Data dictionary
 │
-├── INTEGRATION_GUIDE.md     # Frontend-backend integration guide
-├── README.md                # This file
-└── .gitignore              # Git ignore rules
+├── docs/                         # GitHub Pages documentation
+│   ├── index.md                  # Documentation homepage
+│   ├── design.md                 # Architecture & UI design
+│   ├── implementation.md         # Implementation details
+│   ├── testing.md                # Testing & E2E results
+│   ├── tools.md                  # Development tools
+│   └── assets/                   # Images and screenshots
+│
+├── teacher_demo/                 # Teacher demonstration package
+│   ├── TEACHER_TEST_GUIDE.md
+│   ├── INTEGRATION_GUIDE.md
+│   ├── database/
+│   └── tests/
+│
+├── README.md                     # Project overview
+├── package.json                  # Demo scripts
+├── start-demo.sh                 # One-command demo launcher
+└── .gitignore                    # Git ignore rules
 ```
 
 ## Key Features
@@ -62,13 +101,34 @@ CP3407-groupproject/
    - Probability/confidence scoring
    - Checklist items for case resolution
 
+### 5. Internationalisation
+- English
+- Chinese
+- French
+- Japanese
+- Language preference persistence
+
+### 6. Formal Report
+- Automatically generated formal report
+- Copy report
+- Download report
+- Printable format
+
+### 7. Authority Recommendation
+- Category-specific authority contacts
+- Emergency phone numbers
+- Mobile call support
+- Desktop copy-number support
+
 ## Technology Stack
 
 ### Frontend
+
 - HTML5
 - CSS3
 - Vanilla JavaScript
-- Modern, responsive UI
+- Responsive Design
+- Internationalisation (i18n)
 
 ### Backend
 - **Runtime**: Node.js
@@ -79,10 +139,20 @@ CP3407-groupproject/
 - **File Upload**: multer
 - **Validation**: express-validator
 - **CORS**: Enabled for cross-origin requests
+- RESTful API
+- mysql2
 
 ### Database
 - MySQL 8.0+
-- 5 main tables: users, case_categories, student_cases, evidence_files, checklist_items
+- 8 relational tables:
+  - users
+  - case_categories
+  - student_cases
+  - evidence_files
+  - checklist_items
+  - checklist_templates
+  - guidance_steps
+  - authority_contacts
 
 ## Quick Start Guide
 
@@ -122,7 +192,7 @@ npm install
 
 # Start the server
 npm start
-# Server runs on http://localhost:5000
+# Server runs on http://localhost:5001
 ```
 
 #### 3. Frontend Setup
@@ -152,7 +222,7 @@ npm start
 
 ### Base URL
 ```
-http://localhost:5000/api
+http://localhost:5001/api
 ```
 
 ### Authentication Endpoints
@@ -347,6 +417,31 @@ GET /categories/:category_id
 - is_completed (BOOLEAN)
 ```
 
+### Checklist Templates
+```sql
+- template_id (INT, PK)
+- category_id (INT, FK)
+- item_name (VARCHAR)
+```
+
+### Guidance Steps
+```sql
+- step_id (INT, PK)
+- category_id (INT, FK)
+- step_order (INT)
+- step_text (TEXT)
+```
+
+### Authority Contacts
+```sql
+- contact_id (INT, PK)
+- category_id (INT, FK, nullable)
+- organisation_name (VARCHAR)
+- phone_number (VARCHAR)
+- email (VARCHAR)
+- website (VARCHAR)
+```
+
 ## Frontend Integration
 
 See `INTEGRATION_GUIDE.md` for detailed instructions on integrating the frontend with the backend API. It includes:
@@ -414,29 +509,23 @@ All API endpoints return standard responses:
 3. **Database Connection**: Verify MySQL is running and credentials are correct
 4. **File Upload Issues**: Check uploads directory exists and is writable
 
-## Team Members
-- Frontend: [Team member 1]
-- Backend: [Team member 2]
-- Database: [Team member 3]
-
 ## Demo Credentials
 ```
-Email: yutong@example.com
-Password: (use register to create new account)
+Sample account:
+Email: Linda3@goole.com
+Password: 123456
 ```
 
 ## Future Enhancements
 - Email notifications for case updates
 - Case recommendation system
 - Admin dashboard
-- Multi-language support
 - SMS notifications
 - Case sharing with authorities
-- Analytics and reporting
 
 ## Support
-For issues or questions, contact the development team or refer to the backend README.md for more technical details.
+For detailed documentation, please refer to:
 
----
-Last Updated: 2026-06-15
-Version: 1.0.0
+- GitHub Pages Documentation
+- README.md
+- teacher_demo/TEACHER_TEST_GUIDE.md
