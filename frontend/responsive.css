@@ -1,0 +1,210 @@
+/* SafeStay shared responsive improvements */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+html, body { width: 100%; overflow-x: hidden; }
+img, svg, video, canvas { max-width: 100%; height: auto; }
+button, input, select, textarea { max-width: 100%; }
+a, button { -webkit-tap-highlight-color: transparent; }
+
+input, textarea, select {
+  min-height: 44px;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+.btn,
+.btn-nav,
+.btn-submit,
+.btn-map,
+.btn-call,
+.btn-report,
+.btn-save,
+.btn-next,
+.tab,
+.auth-tab,
+.social-btn {
+  min-height: 44px;
+}
+
+/* Keep every page full width instead of locking it to a phone-sized column. */
+.app-wrapper {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 100vh;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Desktop landing-page width. */
+.hero-inner,
+.section-wrap {
+  width: min(100%, 1100px) !important;
+  max-width: 1100px !important;
+}
+
+.describe-wrap,
+.result-wrap {
+  width: min(100%, 720px) !important;
+  max-width: 720px !important;
+}
+
+/* Prevent long content from forcing horizontal scrolling. */
+.appbar > *, .contact-card > *, .case-card > *, .menu-row > *,
+.section-row > *, .info-row > *, .history-card > *, .action-row > * {
+  min-width: 0;
+}
+.appbar-title, .appbar-sub, .page-title, .page-sub, .contact-name,
+.contact-number, .case-name, .case-meta, .menu-label, .menu-value,
+.section-name, .section-meta, .info-value, .action-text {
+  overflow-wrap: anywhere;
+}
+
+/* Tablet and desktop layouts */
+@media (min-width: 700px) {
+  nav { padding-inline: clamp(24px, 5vw, 64px) !important; }
+
+  .landing-hero { padding: 72px clamp(32px, 6vw, 80px) 80px !important; }
+  .hero-title { max-width: 720px; font-size: clamp(38px, 5vw, 58px) !important; }
+  .hero-sub { max-width: 660px; font-size: 17px !important; }
+  .section-wrap { padding: 32px clamp(24px, 5vw, 64px) !important; }
+  .cases-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 16px !important; }
+  .case-card { padding: 22px 16px !important; }
+
+  .appbar, .page-header { padding-inline: 28px !important; }
+  .contact-list, .case-list { padding-inline: 28px !important; }
+  .ai-banner, .actions-box, .map-wrap, .history-list, .menu-list,
+  .info-card, .section-list, .update-card, .ai-tip-box, .save-wrap {
+    margin-left: 28px !important;
+    margin-right: 28px !important;
+  }
+
+  .contact-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .contact-card { margin-bottom: 0 !important; }
+  .case-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .case-list .case-card { margin-bottom: 0 !important; }
+
+  .describe-wrap, .result-wrap { padding-top: 40px !important; }
+  .result-btns { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+}
+
+/* Small tablets and phones */
+@media (max-width: 699px) {
+  .app-wrapper { max-width: none !important; box-shadow: none; }
+  nav { min-height: 56px; height: auto !important; padding: 10px 16px !important; gap: 12px; }
+  .nav-right { gap: 8px !important; }
+  .btn-nav { padding: 7px 11px !important; }
+
+  .landing-hero { padding: 42px 18px 48px !important; }
+  .hero-title { font-size: clamp(28px, 9vw, 40px) !important; }
+  .hero-sub { font-size: 15px !important; }
+  .section-wrap { padding: 20px 16px !important; }
+
+  .describe-wrap, .result-wrap, .auth-wrap { padding-left: 16px !important; padding-right: 16px !important; }
+  .stepper { overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+  .stepper::-webkit-scrollbar { display: none; }
+  .step-line { min-width: 24px !important; }
+
+  .appbar { position: sticky; top: 0; z-index: 50; }
+  .badge-high, .badge-urgency { white-space: nowrap; }
+}
+
+/* Narrow phone treatment */
+@media (max-width: 480px) {
+  nav .nav-brand { font-size: 16px !important; }
+  nav .nav-lang { padding: 5px 8px !important; }
+  nav .nav-lang span { display: none; }
+  nav .btn-nav { font-size: 12px !important; padding: 7px 9px !important; }
+
+  .hero-actions { flex-direction: column !important; }
+  .hero-actions .btn { width: 100% !important; justify-content: center !important; }
+  .hero-stats { display: grid !important; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px !important; }
+  .stat-chip { padding: 10px 8px !important; }
+  .stat-chip strong { font-size: 18px !important; }
+
+  .emergency-banner { align-items: stretch !important; flex-direction: column !important; }
+  .emergency-banner .btn-danger { width: 100%; justify-content: center; }
+  .cases-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+
+  .appbar { padding: 12px !important; }
+  .appbar-icon { width: 36px !important; height: 36px !important; }
+  .page-header { padding: 18px 14px 14px !important; }
+  .contact-list, .case-list, .checklist-body { padding-left: 12px !important; padding-right: 12px !important; }
+  .ai-banner, .actions-box, .map-wrap, .history-list, .menu-list,
+  .info-card, .section-list, .update-card, .ai-tip-box, .save-wrap {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+
+  .contact-card, .case-card, .history-card { gap: 10px !important; padding: 12px !important; }
+  .contact-icon-wrap, .case-icon-wrap { width: 40px !important; height: 40px !important; }
+  .btn-call { width: 40px !important; height: 40px !important; }
+
+  .header-row, .info-row { align-items: flex-start !important; gap: 10px; }
+  .info-row { flex-direction: column; }
+  .info-value { text-align: left !important; }
+  .count-label { text-align: left !important; }
+
+  .result-btns { grid-template-columns: 1fr !important; }
+  .detected-card { align-items: flex-start !important; }
+  .detected-type { font-size: 21px !important; }
+
+  .menu-row { flex-wrap: wrap; }
+  .menu-value { margin-left: 32px; }
+  .tabs { overflow-x: auto; flex-wrap: nowrap !important; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { white-space: nowrap; }
+}
+
+@media (max-width: 360px) {
+  nav .btn-nav.outline { display: none; }
+  .hero-stats { grid-template-columns: 1fr !important; }
+  .cases-grid { grid-template-columns: 1fr !important; }
+  .badge-high, .badge-urgency { font-size: 9px !important; padding: 3px 7px !important; }
+  .appbar-sub { font-size: 11px !important; }
+}
+
+
+/* Full-width desktop pages with comfortably centred content. */
+nav .nav-brand {
+  margin-right: auto;
+  text-decoration: none;
+}
+
+@media (min-width: 700px) {
+  .appbar {
+    width: 100%;
+    padding-left: max(28px, calc((100% - 1100px) / 2 + 28px)) !important;
+    padding-right: max(28px, calc((100% - 1100px) / 2 + 28px)) !important;
+  }
+
+  .tabs,
+  .page-header,
+  .contact-list,
+  .case-list,
+  .checklist-body,
+  .ai-banner,
+  .actions-box,
+  .map-wrap,
+  .call-toast,
+  .history-list,
+  .menu-list,
+  .info-card,
+  .section-list,
+  .update-card,
+  .ai-tip-box,
+  .save-wrap,
+  .empty-state,
+  .error-box {
+    width: min(calc(100% - 56px), 1100px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .tabs { padding-left: 0 !important; padding-right: 0 !important; }
+  .contact-list, .case-list, .checklist-body { padding-left: 0 !important; padding-right: 0 !important; }
+}

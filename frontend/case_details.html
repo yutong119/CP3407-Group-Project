@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="pageTitles.caseDetails">Case Details – SafeStay</title>
+  <script src="i18n.js"></script>
+  <script src="api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+    .badge-urgency {
+      margin-left: auto;
+      color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .badge-urgency.high   { background: #E02424; }
+    .badge-urgency.medium { background: #C27803; }
+    .badge-urgency.low    { background: #057A55; }
+
+    /* ── Page header ── */
+    .page-header {
+      background: #fff;
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #111827; }
+    .page-sub   { font-size: 13px; color: #6B7280; margin-top: 4px; }
+
+    /* ── Info card ── */
+    .info-card {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6;
+      font-size: 13px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #6B7280; }
+    .info-value { color: #111827; font-weight: 600; text-align: right; }
+
+    /* ── Section list (evidence / checklist / contacts / report) ── */
+    .section-list {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .section-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+    .section-row:last-child { border-bottom: none; }
+    .section-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+    .section-icon-report { background: #EEF2FF; }
+    .section-body { flex: 1; }
+    .section-name { font-size: 14px; font-weight: 600; color: #111827; }
+    .section-meta { font-size: 12px; color: #6B7280; margin-top: 1px; }
+    .section-chevron { color: #9CA3AF; font-size: 16px; flex-shrink: 0; }
+
+    /* ── Update status ── */
+    .update-card {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .update-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 10px; }
+    .status-select {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #E5E7EB;
+      border-radius: 9px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #fff;
+      margin-bottom: 12px;
+    }
+    .btn-update {
+      width: 100%; padding: 14px;
+      background: #E02424; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-update:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-update.saved { background: #057A55; }
+
+    .error-box {
+      margin: 12px 16px 0;
+      background: #FDF2F2; color: #E02424;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .loading-note {
+      margin: 16px; font-size: 13px; color: #6B7280; text-align: center;
+    }
+  </style>
+<link rel="stylesheet" href="responsive.css" />
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <a href="history.html" class="appbar-icon">←</a>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub" id="case-subtitle" data-i18n="caseDetails.caseSubtitleLoading">Loading…</div>
+    </div>
+    <div class="badge-urgency high" id="urgency-badge">HIGH</div>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-title" id="case-title" data-i18n="caseDetails.pageTitle">Case Details</div>
+    <div class="page-sub" data-i18n="caseDetails.pageSub">Everything related to this case in one place</div>
+  </div>
+
+  <!-- Case info -->
+  <div class="info-card" id="info-card">
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.caseId">Case ID</span><span class="info-value" id="info-id">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.date">Date</span><span class="info-value" id="info-date">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.location">Location</span><span class="info-value" id="info-location">—</span></div>
+    <div class="info-row"><span class="info-label" data-i18n="caseDetails.status">Status</span><span class="info-value" id="info-status">—</span></div>
+  </div>
+
+  <!-- Related sections -->
+  <div class="section-list">
+    <a class="section-row" href="#" id="row-evidence">
+      <div class="section-icon" style="background:#EFF6FF">📎</div>
+      <div class="section-body">
+        <div class="section-name" data-i18n="caseDetails.evidence">Evidence</div>
+        <div class="section-meta" id="evidence-meta" data-i18n="caseDetails.evidenceMetaChecking">Checking…</div>
+      </div>
+      <div class="section-chevron">›</div>
+    </a>
+    <a class="section-row" href="#" id="row-checklist">
+      <div class="section-icon" style="background:#EFF6FF">✅</div>
+      <div class="section-body">
+        <div class="section-name" data-i18n="caseDetails.checklist">Checklist</div>
+        <div class="section-meta" id="checklist-meta" data-i18n="caseDetails.checklistMeta">View evidence checklist</div>
+      </div>
+      <div class="section-chevron">›</div>
+    </a>
+    <a class="section-row" href="#" id="row-contacts">
+      <div class="section-icon" style="background:#FDF2F2">📞</div>
+      <div class="section-body">
+        <div class="section-name" data-i18n="caseDetails.contacts">Contacts</div>
+        <div class="section-meta" id="contacts-meta" data-i18n="caseDetails.contactsMeta">View recommended contacts</div>
+      </div>
+      <div class="section-chevron">›</div>
+    </a>
+    <a class="section-row" href="#" id="row-report">
+      <div class="section-icon section-icon-report">🧾</div>
+      <div class="section-body">
+        <div class="section-name">Formal Report</div>
+        <div class="section-meta">View / Generate Formal Report</div>
+      </div>
+      <div class="section-chevron">›</div>
+    </a>
+
+  </div>
+
+  <!-- Update case status -->
+  <div class="update-card">
+    <div class="update-title" data-i18n="caseDetails.updateCase">Update Case</div>
+    <select class="status-select" id="status-select">
+      <option value="In Progress">In Progress</option>
+      <option value="Resolved">Resolved</option>
+      <option value="Closed">Closed</option>
+    </select>
+    <button class="btn-update" id="btn-update" onclick="handleUpdateCase()" data-i18n="caseDetails.updateCaseButton">Update Case</button>
+  </div>
+
+  <div class="error-box" id="error-box"></div>
+
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const CASE_ID = params.get('case_id');
+
+  let CASE_DATA = null;
+
+  function query() {
+    return CASE_ID ? '?case_id=' + encodeURIComponent(CASE_ID) : '';
+  }
+
+  function urgencyClass(u) {
+    u = (u || 'medium').toLowerCase();
+    return ['high', 'medium', 'low'].includes(u) ? u : 'medium';
+  }
+
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
+  function renderCase(c) {
+    CASE_DATA = c;
+
+    const titleValue = c.detected_case || c.case_title || 'Case';
+    const title = resolveDisplayText('caseTypes.' + titleValue, titleValue);
+    document.getElementById('case-title').textContent = title;
+    document.getElementById('case-subtitle').textContent = title + ' · ' + (c.case_id || CASE_ID || '');
+
+    const urgency = urgencyClass(c.urgency_level);
+    const badge = document.getElementById('urgency-badge');
+    badge.className = 'badge-urgency ' + urgency;
+    badge.textContent = urgency.toUpperCase();
+
+    document.getElementById('info-id').textContent = c.case_id || CASE_ID || '—';
+    document.getElementById('info-date').textContent = c.created_at
+      ? new Date(c.created_at).toLocaleString()
+      : (c.date || '—');
+    document.getElementById('info-location').textContent = c.location || '—';
+    document.getElementById('info-status').textContent = c.case_status || window.t('common.inProgress');
+
+    if (c.case_status) {
+      document.getElementById('status-select').value = c.case_status;
+    }
+
+    // Wire section links, carrying case_id through
+    document.getElementById('row-evidence').href  = 'evidence.html' + query();
+    document.getElementById('row-checklist').href = 'evidence.html' + query();
+    document.getElementById('row-contacts').href  = 'contacts.html' + query();
+    document.getElementById('row-report').href    = 'result.html' + query() + '#formal-report';
+  }
+
+  function renderChecklistMeta(checklist) {
+    const items = Array.isArray(checklist) ? checklist : [];
+    const completedCount = items.filter(
+      item => item.is_completed === 1 || item.is_completed === true
+    ).length;
+    const totalCount = items.length;
+
+    if (totalCount > 0) {
+      document.getElementById('checklist-meta').textContent = `${completedCount}/${totalCount} completed`;
+      return;
+    }
+
+    document.getElementById('checklist-meta').textContent = window.t('caseDetails.checklistMeta');
+  }
+
+  // Prefer live backend data; fall back to whatever was cached during
+  // describe.html's analysis step so the page still renders something
+  // useful if the backend is briefly unavailable.
+  async function loadCase() {
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (cached) {
+      try {
+        const analysis = JSON.parse(cached);
+        renderCase(Object.assign({ case_id: CASE_ID }, analysis));
+      } catch (e) { /* ignore malformed cache */ }
+    }
+
+    if (!CASE_ID) {
+      if (!cached) {
+        document.getElementById('case-subtitle').textContent = window.t('caseDetails.noCaseSelected');
+      }
+      return;
+    }
+
+    try {
+      const response = await safeStayAPI.getCase(CASE_ID);
+      const caseData = response.case || {};
+      const checklist = response.checklist || [];
+      renderCase(caseData);
+      renderChecklistMeta(checklist);
+    } catch (err) {
+      console.warn('Could not load case from backend:', err.message);
+      if (!cached) {
+        document.getElementById('error-box').textContent = window.t('caseDetails.loadError', { message: err.message || '' });
+        document.getElementById('error-box').style.display = 'block';
+      }
+    }
+  }
+
+  async function loadEvidenceCount() {
+    if (!CASE_ID) {
+      document.getElementById('evidence-meta').textContent = window.t('caseDetails.evidenceMetaView');
+      return;
+    }
+    try {
+      const response = await safeStayAPI.getEvidenceFiles(CASE_ID);
+      const files = response.evidence || response.files || response;
+      const count = Array.isArray(files) ? files.length : 0;
+      document.getElementById('evidence-meta').textContent =
+        count === 1 ? window.t('caseDetails.evidenceMetaUploaded', { count: 1 }) : window.t('caseDetails.evidenceMetaUploadedPlural', { count });
+    } catch (e) {
+      document.getElementById('evidence-meta').textContent = window.t('caseDetails.evidenceMetaView');
+    }
+  }
+
+  async function handleUpdateCase() {
+    const btn = document.getElementById('btn-update');
+    const errBox = document.getElementById('error-box');
+    const status = document.getElementById('status-select').value;
+
+    if (!CASE_ID) {
+      errBox.textContent = window.t('caseDetails.noCaseSelectedToUpdate');
+      errBox.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = window.t('caseDetails.updateSuccess');
+    errBox.style.display = 'none';
+
+    try {
+      const c = CASE_DATA || {};
+      await safeStayAPI.updateCase(
+        CASE_ID,
+        status,
+        c.urgency_level,
+        c.detected_case,
+        c.probability
+      );
+      document.getElementById('info-status').textContent = status;
+      btn.classList.add('saved');
+      btn.textContent = window.t('caseDetails.updated');
+      setTimeout(() => {
+        btn.classList.remove('saved');
+        btn.textContent = window.t('caseDetails.updateCase');
+        btn.disabled = false;
+      }, 2000);
+    } catch (err) {
+      errBox.textContent = window.t('caseDetails.updateError', { message: err.message || '' });
+      errBox.style.display = 'block';
+      btn.textContent = window.t('caseDetails.updateCase');
+      btn.disabled = false;
+    }
+  }
+
+  async function init() {
+    await loadCase();
+    loadEvidenceCount();
+  }
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment variables
+.env
+backend/.env
+
+# IDE files
+.idea/
+.vscode/
+
+# System files
+.DS_Store
+
+# Uploads
+uploads/
+backend/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated documents and temporary files
+*.pdf
+tmp/
+temp/
+*.tmp
+*.swp
+.demo-logs/

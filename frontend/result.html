@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SafeStay – Analysis Result</title>
+<title data-i18n="pageTitles.result">SafeStay – Analysis Result</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,6 +26,7 @@
     --gray-900:   #111827;
     --white:      #FFFFFF;
     --shadow-sm:  0 1px 3px rgba(0,0,0,.08);
+    --shadow-md:  0 6px 14px rgba(17,24,39,.12);
   }
 
   body {
@@ -170,6 +171,140 @@
   }
   .action-text { font-size: 13px; color: var(--gray-700); line-height: 1.5; padding-top: 3px; }
 
+  .report-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .report-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .report-subtitle {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .report-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .btn-report {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-report.primary { background: var(--blue); color: var(--white); }
+  .btn-report.outline { background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-200); }
+  .btn-report:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  .report-loading {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--gray-500);
+    display: none;
+  }
+
+  .report-preview {
+    margin-top: 14px;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    background: var(--gray-50);
+    padding: 14px;
+    display: none;
+  }
+  .report-preview h4 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 12px 0 8px;
+  }
+  .report-preview h4:first-child { margin-top: 0; }
+  .report-kv {
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.6;
+  }
+  .report-kv strong { color: var(--gray-900); }
+  .report-list {
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.6;
+    padding-left: 18px;
+  }
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .report-table th,
+  .report-table td {
+    border: 1px solid var(--gray-200);
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .report-table th {
+    background: var(--gray-100);
+    font-weight: 700;
+  }
+  .report-disclaimer {
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--gray-500);
+    line-height: 1.5;
+  }
+
+  .report-error {
+    margin-top: 12px;
+    background: var(--red-light);
+    border: 1px solid #FECACA;
+    color: var(--red);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    display: none;
+  }
+
+  .report-hidden { display: none; }
+  .case-details-link { margin-bottom: 10px; }
+  .result-error-banner {
+    display: none;
+    background: var(--red-light);
+    border: 1px solid #FECACA;
+    color: var(--red);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .js-motion .fade-in-card {
+    opacity: 0;
+    transform: translateY(20px);
+    will-change: opacity, transform;
+    transition:
+      opacity 300ms ease-out var(--fade-delay, 0ms),
+      transform 300ms ease-out var(--fade-delay, 0ms);
+  }
+
+  .js-motion.page-loaded .fade-in-card {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   /* BUTTONS */
   .result-btns {
     display: grid;
@@ -186,10 +321,13 @@
     border: none;
     font-family: inherit;
     text-align: center;
-    transition: opacity .15s, transform .1s;
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out, opacity 200ms ease-out;
   }
-  .btn-result:active { transform: scale(.97); }
-  .btn-result:hover  { opacity: .88; }
+  .btn-result:hover,
+  .btn-result:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
   .btn-result.outline {
     background: var(--white);
     border: 1px solid var(--gray-200);
@@ -214,81 +352,716 @@
     text-align: center;
     text-decoration: none;
     display: block;
-    transition: background .15s;
+    transition: background 200ms ease-out, transform 200ms ease-out, box-shadow 200ms ease-out;
   }
-  .btn-back:hover { background: var(--gray-50); }
+  .btn-back:hover,
+  .btn-back:focus-visible {
+    background: var(--gray-50);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-report {
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  }
+  .btn-report:hover:not(:disabled),
+  .btn-report:focus-visible:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-motion .fade-in-card,
+    .js-motion.page-loaded .fade-in-card {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+
+    .btn-result,
+    .btn-back,
+    .btn-report {
+      transition: none;
+    }
+
+    .btn-result:hover,
+    .btn-result:focus-visible,
+    .btn-back:hover,
+    .btn-back:focus-visible,
+    .btn-report:hover,
+    .btn-report:focus-visible {
+      transform: none;
+      box-shadow: none;
+    }
+  }
 </style>
 </head>
 <body>
 
 <nav>
-  <a class="nav-brand" href="1_landing.html">
+  <a class="nav-brand" href="index.html">
     <div class="shield">🛡</div>
     SafeStay
   </a>
-  <div class="nav-lang">🌐 English ▾</div>
+  <div class="nav-lang" id="nav-lang" onclick="location.href='language.html?return_to=' + encodeURIComponent('result.html' + window.location.search)">🌐 <span id="nav-lang-text">English</span> ▾</div>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('safestay_preferred_language');
+      var code = saved && ['en', 'zh-CN', 'ja', 'fr'].includes(saved) ? saved : 'en';
+      var textEl = document.getElementById('nav-lang-text');
+      if (textEl) {
+        textEl.textContent = window.t ? window.t('languages.' + code) : code;
+      }
+    })();
+  </script>
 </nav>
 
 <div class="result-wrap">
 
-  <a class="back-link" href="4_describe.html">← Edit description</a>
+  <a class="back-link" href="describe.html" data-i18n="common.editDescription">← Edit description</a>
 
-  <h1>Analysis Result</h1>
+  <h1 data-i18n="result.analysisResult">Analysis Result</h1>
 
   <!-- Detected Case -->
-  <div class="detected-card">
+  <div class="detected-card fade-in-card" style="--fade-delay: 0ms;">
     <div>
-      <div class="detected-label">Detected Case</div>
-      <div class="detected-type">Theft</div>
-      <div class="detected-prob">Probability: 92%</div>
+      <div class="detected-label" data-i18n="result.detectedCase">Detected Case</div>
+      <div class="detected-type" id="detected-type">Loading…</div>
+      <div class="detected-prob" id="detected-prob">&nbsp;</div>
     </div>
-    <div class="detected-icon">🛍️</div>
+    <div class="detected-icon" id="detected-icon">⏳</div>
   </div>
 
   <!-- Urgency Level -->
-  <div class="urgency-card high">
-    <div class="urgency-icon">🚨</div>
+  <div class="urgency-card medium fade-in-card" id="urgency-card" style="--fade-delay: 100ms;">
+    <div class="urgency-icon">⏳</div>
     <div>
-      <div class="urgency-title">Urgency Level</div>
-      <span class="urgency-badge high">⚠ High</span>
-      <p class="urgency-desc">This situation requires immediate attention. Please act on the steps below as soon as possible.</p>
+      <div class="urgency-title" data-i18n="result.urgencyLevel">Urgency Level</div>
+      <span class="urgency-badge medium" id="urgency-badge">Loading…</span>
+      <p class="urgency-desc" id="urgency-desc">Fetching the analysis for this case…</p>
     </div>
   </div>
 
+  <!-- Error banner (hidden unless something goes wrong) -->
+  <div id="error-banner" class="result-error-banner"></div>
+
   <!-- Recommended Actions -->
-  <div class="actions-card">
-    <h3>Recommended Actions</h3>
+  <div class="actions-card fade-in-card" style="--fade-delay: 200ms;">
+    <h3 data-i18n="result.recommendedActions">Recommended Actions</h3>
     <div class="action-item">
-      <div class="action-num">1</div>
-      <div class="action-text">Contact the police immediately and file a report</div>
+      <div class="action-num">•</div>
+      <div class="action-text">Loading recommended actions…</div>
     </div>
-    <div class="action-item">
-      <div class="action-num">2</div>
-      <div class="action-text">Block your bank cards and accounts right away</div>
+  </div>
+
+  <div class="report-card fade-in-card" id="formal-report" style="--fade-delay: 300ms;">
+    <div class="report-title">Generate Formal Report</div>
+    <div class="report-subtitle">Create a structured incident report using your case details, evidence checklist, recommended actions, and contacts.</div>
+    <div class="report-actions">
+      <button class="btn-report primary" id="btn-generate-report">Generate Report</button>
+      <button class="btn-report outline report-hidden" id="btn-copy-report">Copy Report</button>
+      <button class="btn-report outline report-hidden" id="btn-download-report">Download PDF</button>
+      <button class="btn-report outline report-hidden" id="btn-collapse-report">Collapse Report</button>
     </div>
-    <div class="action-item">
-      <div class="action-num">3</div>
-      <div class="action-text">Gather all possible evidence from the scene</div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">4</div>
-      <div class="action-text">Check CCTV footage around the area if accessible</div>
-    </div>
-    <div class="action-item">
-      <div class="action-num">5</div>
-      <div class="action-text">Report the incident to your university support office if needed</div>
-    </div>
+    <div class="report-loading" id="report-loading">Generating report…</div>
+    <div class="report-error" id="report-error"></div>
+    <div class="report-preview" id="report-preview"></div>
   </div>
 
   <!-- CTA Buttons -->
   <div class="result-btns">
-    <button class="btn-result outline">📋 View Checklist</button>
-    <button class="btn-result primary">📞 View Contacts</button>
+    <button class="btn-result outline fade-in-card" style="--fade-delay: 400ms;" id="checklist-btn" data-i18n="result.viewChecklist">📋 View Checklist</button>
+    <button class="btn-result primary fade-in-card" style="--fade-delay: 500ms;" id="contacts-btn" data-i18n="result.viewContacts">📞 View Contacts</button>
   </div>
 
-  <a class="btn-back" href="index.html">← Back to Home</a>
+  <a class="btn-back case-details-link fade-in-card" style="--fade-delay: 600ms;" href="#" id="case-details-btn" data-i18n="result.viewCaseDetails">📁 View Full Case Details</a>
+
+  <a class="btn-back fade-in-card" style="--fade-delay: 700ms;" href="index.html" data-i18n="result.backHome">← Back to Home</a>
 
 </div>
+
+<script src="i18n.js"></script>
+<script src="api.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const caseId = params.get('case_id');
+  const query  = caseId ? '?case_id=' + encodeURIComponent(caseId) : '';
+
+  let REPORT_DATA = null;
+  let REPORT_EXPANDED = false;
+  let CURRENT_CASE_RESPONSE = null;
+
+  document.getElementById('checklist-btn').addEventListener('click', () => {
+    window.location.href = 'evidence.html' + query;
+  });
+  document.getElementById('contacts-btn').addEventListener('click', () => {
+    window.location.href = 'contacts.html' + query;
+  });
+  document.getElementById('case-details-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = 'case_details.html' + query;
+  });
+
+  document.getElementById('btn-generate-report').addEventListener('click', async () => {
+    if (REPORT_DATA && !REPORT_EXPANDED) {
+      clearReportError();
+      renderReportPreview(REPORT_DATA);
+      return;
+    }
+    await generateReport(true);
+  });
+  document.getElementById('btn-copy-report').addEventListener('click', copyReportText);
+  document.getElementById('btn-download-report').addEventListener('click', downloadReportPdf);
+  document.getElementById('btn-collapse-report').addEventListener('click', collapseReport);
+
+  const GENERIC_ACTIONS = [
+    'Contact the police or campus security if you feel unsafe',
+    'Write down everything you remember while it is fresh',
+    'Gather any evidence related to the incident',
+    'Reach out to a trusted contact or support office',
+    'Follow up using the checklist and contacts for this case type'
+  ];
+
+  const CASE_ICONS = {
+    theft: '🛍️', harassment: '⚠️', assault: '🚨', fraud: '💳',
+    accident: '🚑', fire: '🔥', default: '📄'
+  };
+
+  function showError(message) {
+    const banner = document.getElementById('error-banner');
+    banner.textContent = message;
+    banner.style.display = 'block';
+  }
+
+  function showReportError(message) {
+    const err = document.getElementById('report-error');
+    err.textContent = message;
+    err.style.display = 'block';
+  }
+
+  function clearReportError() {
+    const err = document.getElementById('report-error');
+    err.textContent = '';
+    err.style.display = 'none';
+  }
+
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
+  function formatDate(value) {
+    if (!value) return 'Not available';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleString();
+  }
+
+  function setReportButtonsVisible(visible) {
+    document.getElementById('btn-copy-report').style.display = visible ? 'inline-block' : 'none';
+    document.getElementById('btn-download-report').style.display = visible ? 'inline-block' : 'none';
+    document.getElementById('btn-collapse-report').style.display = visible ? 'inline-block' : 'none';
+  }
+
+  function renderAnalysis(caseData) {
+    console.log('SafeStay: case data received', caseData);
+
+    const detectedCase =
+      caseData.detected_case ?? caseData.detectedCase ?? caseData.case_type ??
+      caseData.predicted_case ?? (caseData.analysis && caseData.analysis.detected_case);
+
+    const probability =
+      caseData.probability ?? caseData.confidence ??
+      (caseData.analysis && caseData.analysis.probability);
+
+    if (detectedCase) {
+      const displayedCaseType = resolveDisplayText('caseTypes.' + detectedCase, detectedCase);
+      document.getElementById('detected-type').textContent = displayedCaseType;
+      const key = String(detectedCase).toLowerCase();
+      document.getElementById('detected-icon').textContent = CASE_ICONS[key] || CASE_ICONS.default;
+    } else {
+      document.getElementById('detected-type').textContent = window.t('result.unknown');
+      showError(window.t('result.missingCaseType'));
+    }
+
+    if (probability != null) {
+      document.getElementById('detected-prob').textContent = window.t('result.probability', { probability: probability });
+    } else {
+      document.getElementById('detected-prob').textContent = '';
+    }
+
+    const urgency = (caseData.urgency_level || 'medium').toLowerCase();
+    const card  = document.getElementById('urgency-card');
+    const badge = document.getElementById('urgency-badge');
+    const desc  = document.getElementById('urgency-desc');
+
+    card.className  = `urgency-card ${urgency}`;
+    badge.className = `urgency-badge ${urgency}`;
+
+    if (urgency === 'high') {
+      badge.textContent = window.t('result.high');
+      desc.textContent  = window.t('result.highDesc');
+    } else if (urgency === 'low') {
+      badge.textContent = window.t('result.low');
+      desc.textContent  = window.t('result.lowDesc');
+    } else {
+      badge.textContent = window.t('result.medium');
+      desc.textContent  = window.t('result.mediumDesc');
+    }
+
+    const actions = (Array.isArray(caseData.recommended_actions) && caseData.recommended_actions.length)
+      ? caseData.recommended_actions
+      : GENERIC_ACTIONS;
+
+    const actionsCard = document.querySelector('.actions-card');
+    const items = actions.map((action, i) => {
+      const text = typeof action === 'string'
+        ? resolveDisplayText('actionTexts.' + action, action)
+        : (action.step_description || action.step_title || action.item_name || 'Recommended step');
+      return `
+      <div class="action-item">
+        <div class="action-num">${i + 1}</div>
+        <div class="action-text">${text}</div>
+      </div>
+    `;
+    }).join('');
+    actionsCard.innerHTML = '<h3>' + window.t('result.recommendedActions') + '</h3>' + items;
+
+  }
+
+  function formatChecklistRows(report) {
+    const checklist = Array.isArray(report.checklist) ? report.checklist : [];
+    if (!checklist.length) return '<div class="report-kv">No checklist items available.</div>';
+
+    return `
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Checklist item</th>
+            <th>Required / Optional</th>
+            <th>Completed status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${checklist.map(item => {
+            const isCompleted = item.is_completed === 1 || item.is_completed === true;
+            const isRequired = item.is_required === 1 || item.is_required === true;
+            return `<tr><td>${item.item_name || ''}</td><td>${isRequired ? 'Required' : 'Optional'}</td><td>${isCompleted ? 'Completed' : 'Not completed'}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function formatEvidenceRows(report) {
+    const evidence = Array.isArray(report.evidence) ? report.evidence : [];
+    if (!evidence.length) return '<div class="report-kv">No uploaded evidence files yet.</div>';
+
+    return `
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>File name</th>
+            <th>File type</th>
+            <th>Description</th>
+            <th>Uploaded date</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${evidence.map(item => {
+            return `<tr><td>${item.file_name || ''}</td><td>${item.file_type || ''}</td><td>${item.description || '-'}</td><td>${formatDate(item.uploaded_at)}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function formatContactsRows(report) {
+    const contacts = Array.isArray(report.recommended_contacts) ? report.recommended_contacts : [];
+    if (!contacts.length) return '<div class="report-kv">No recommended contacts available.</div>';
+
+    return `
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${contacts.map(item => {
+            const contact = item.number || item.email || item.website || '-';
+            return `<tr><td>${item.name || ''}</td><td>${item.type || ''}</td><td>${contact}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderReportPreview(report) {
+    const preview = document.getElementById('report-preview');
+    const caseData = report.case || {};
+    const actions = Array.isArray(report.recommended_actions) ? report.recommended_actions : [];
+
+    preview.innerHTML = `
+      <h4>SafeStay Incident Report</h4>
+
+      <h4>Case Reference</h4>
+      <div class="report-kv">
+        <div><strong>Case ID:</strong> ${caseData.case_id || ''}</div>
+        <div><strong>Case title:</strong> ${caseData.case_title || ''}</div>
+        <div><strong>Created date:</strong> ${formatDate(caseData.created_at)}</div>
+        <div><strong>Current status:</strong> ${caseData.case_status || ''}</div>
+      </div>
+
+      <h4>Incident Details</h4>
+      <div class="report-kv">
+        <div><strong>Incident type:</strong> ${caseData.detected_case || ''}</div>
+        <div><strong>Urgency level:</strong> ${caseData.urgency_level || ''}</div>
+        <div><strong>Location:</strong> ${caseData.location || ''}</div>
+        <div><strong>User-provided description:</strong> ${caseData.description || ''}</div>
+      </div>
+
+      <h4>Incident Summary</h4>
+      <div class="report-kv">${report.incident_summary || ''}</div>
+
+      <h4>Recommended Next Steps</h4>
+      <ol class="report-list">
+        ${(actions.length ? actions : []).map((action) => `<li>${action.step_description || action.step_title || action}</li>`).join('') || '<li>No recommended steps available.</li>'}
+      </ol>
+
+      <h4>Evidence Preparation</h4>
+      ${formatChecklistRows(report)}
+
+      <h4>Uploaded Evidence</h4>
+      ${formatEvidenceRows(report)}
+
+      <h4>Recommended Contacts</h4>
+      ${formatContactsRows(report)}
+
+      <h4>Formal Message</h4>
+      <div class="report-kv">${(report.formal_message || '').replace(/\n/g, '<br/>')}</div>
+
+      <h4>Disclaimer</h4>
+      <div class="report-disclaimer">This report is generated for guidance only. It is not an official police report, legal filing, medical diagnosis, or professional advice.</div>
+    `;
+
+    preview.style.display = 'block';
+    REPORT_EXPANDED = true;
+    setReportButtonsVisible(true);
+    document.getElementById('btn-generate-report').textContent = 'Refresh Report';
+  }
+
+  function getReportPlainText(report) {
+    const caseData = report.case || {};
+    const actions = Array.isArray(report.recommended_actions) ? report.recommended_actions : [];
+    const checklist = Array.isArray(report.checklist) ? report.checklist : [];
+    const evidence = Array.isArray(report.evidence) ? report.evidence : [];
+    const contacts = Array.isArray(report.recommended_contacts) ? report.recommended_contacts : [];
+
+    const lines = [
+      'SafeStay Incident Report',
+      '',
+      'Case Reference',
+      `- Case ID: ${caseData.case_id || ''}`,
+      `- Case title: ${caseData.case_title || ''}`,
+      `- Created date: ${formatDate(caseData.created_at)}`,
+      `- Current status: ${caseData.case_status || ''}`,
+      '',
+      'Incident Details',
+      `- Incident type: ${caseData.detected_case || ''}`,
+      `- Urgency level: ${caseData.urgency_level || ''}`,
+      `- Location: ${caseData.location || ''}`,
+      `- User-provided description: ${caseData.description || ''}`,
+      '',
+      'Incident Summary',
+      report.incident_summary || '',
+      '',
+      'Recommended Next Steps'
+    ];
+
+    actions.forEach((item, idx) => {
+      lines.push(`${idx + 1}. ${item.step_description || item.step_title || item}`);
+    });
+
+    lines.push('', 'Evidence Preparation');
+    checklist.forEach((item) => {
+      const completed = item.is_completed === 1 || item.is_completed === true ? 'Completed' : 'Not completed';
+      const required = item.is_required === 1 || item.is_required === true ? 'Required' : 'Optional';
+      lines.push(`- ${item.item_name || ''} | ${required} | ${completed}`);
+    });
+
+    lines.push('', 'Uploaded Evidence');
+    evidence.forEach((item) => {
+      lines.push(`- ${item.file_name || ''} | ${item.file_type || ''} | ${item.description || '-'} | ${formatDate(item.uploaded_at)}`);
+    });
+
+    lines.push('', 'Recommended Contacts');
+    contacts.forEach((item) => {
+      const contact = item.number || item.email || item.website || '-';
+      lines.push(`- ${item.name || ''} (${item.type || ''}) ${contact}`);
+    });
+
+    lines.push('', 'Formal Message', report.formal_message || '', '', 'Disclaimer', 'This report is generated for guidance only. It is not an official police report, legal filing, medical diagnosis, or professional advice.');
+
+    return lines.join('\n');
+  }
+
+  async function generateReport(forceRefresh = false) {
+    const loading = document.getElementById('report-loading');
+    const preview = document.getElementById('report-preview');
+    const btn = document.getElementById('btn-generate-report');
+
+    clearReportError();
+
+    if (!caseId) {
+      showReportError('No case selected. Please open a case first.');
+      return;
+    }
+
+    if (!forceRefresh && REPORT_DATA && !REPORT_EXPANDED) {
+      renderReportPreview(REPORT_DATA);
+      return;
+    }
+
+    btn.disabled = true;
+    loading.style.display = 'block';
+
+    try {
+      const response = await safeStayAPI.getCaseReport(caseId);
+      REPORT_DATA = response.report || response;
+      renderReportPreview(REPORT_DATA);
+      if (window.location.hash === '#formal-report') {
+        document.getElementById('formal-report').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } catch (err) {
+      preview.style.display = REPORT_EXPANDED ? 'block' : 'none';
+      setReportButtonsVisible(REPORT_EXPANDED && !!REPORT_DATA);
+
+      const msg = (err.message || '').toLowerCase();
+      if (msg.includes('unauthorized') || msg.includes('token')) {
+        showReportError('Your session has expired. Please log in again.');
+      } else if (msg.includes('not found')) {
+        showReportError('Case not found. Please check the selected case.');
+      } else if (msg.includes('access')) {
+        showReportError('You do not have permission to view this case report.');
+      } else {
+        showReportError('Could not generate report right now. Please try again.');
+      }
+    } finally {
+      loading.style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  async function copyReportText() {
+    const btn = document.getElementById('btn-copy-report');
+    clearReportError();
+
+    if (!REPORT_DATA) {
+      showReportError('Generate the report first before copying.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(getReportPlainText(REPORT_DATA));
+      const original = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(() => {
+        btn.textContent = original;
+      }, 1600);
+    } catch (err) {
+      showReportError('Clipboard permission failed. Please allow clipboard access and try again.');
+    }
+  }
+
+  function addWrappedText(pdf, text, x, y, maxWidth, lineHeight, pageState) {
+    const lines = pdf.splitTextToSize(String(text || ''), maxWidth);
+    lines.forEach((line) => {
+      if (pageState.y > pageState.pageHeight - 20) {
+        pdf.addPage();
+        pageState.page += 1;
+        pageState.y = 20;
+      }
+      pdf.text(line, x, pageState.y);
+      pageState.y += lineHeight;
+    });
+    return pageState.y;
+  }
+
+  function writeSectionTitle(pdf, title, pageState) {
+    if (pageState.y > pageState.pageHeight - 30) {
+      pdf.addPage();
+      pageState.page += 1;
+      pageState.y = 20;
+    }
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text(title, 15, pageState.y);
+    pageState.y += 7;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(10);
+  }
+
+  async function downloadReportPdf() {
+    clearReportError();
+    if (!REPORT_DATA) {
+      showReportError('Generate the report first before downloading.');
+      return;
+    }
+
+    try {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageState = { y: 20, page: 1, pageHeight: 297 };
+      const report = REPORT_DATA;
+      const caseData = report.case || {};
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.text('SafeStay Incident Report', 15, pageState.y);
+      pageState.y += 8;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      addWrappedText(pdf, `Generated at: ${formatDate(report.generated_at || new Date().toISOString())}`, 15, pageState.y, 180, 5, pageState);
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Case Reference', pageState);
+      addWrappedText(pdf, `Case ID: ${caseData.case_id || ''}` , 15, pageState.y, 180, 5, pageState);
+      addWrappedText(pdf, `Case title: ${caseData.case_title || ''}` , 15, pageState.y, 180, 5, pageState);
+      addWrappedText(pdf, `Created date: ${formatDate(caseData.created_at)}` , 15, pageState.y, 180, 5, pageState);
+      addWrappedText(pdf, `Current status: ${caseData.case_status || ''}` , 15, pageState.y, 180, 5, pageState);
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Incident Details', pageState);
+      addWrappedText(pdf, `Incident type: ${caseData.detected_case || ''}` , 15, pageState.y, 180, 5, pageState);
+      addWrappedText(pdf, `Urgency level: ${caseData.urgency_level || ''}` , 15, pageState.y, 180, 5, pageState);
+      addWrappedText(pdf, `Location: ${caseData.location || ''}` , 15, pageState.y, 180, 5, pageState);
+      addWrappedText(pdf, `User-provided description: ${caseData.description || ''}` , 15, pageState.y, 180, 5, pageState);
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Incident Summary', pageState);
+      addWrappedText(pdf, report.incident_summary || '', 15, pageState.y, 180, 5, pageState);
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Recommended Next Steps', pageState);
+      (report.recommended_actions || []).forEach((item, index) => {
+        addWrappedText(pdf, `${index + 1}. ${item.step_description || item.step_title || item}`, 18, pageState.y, 177, 5, pageState);
+      });
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Evidence Preparation', pageState);
+      (report.checklist || []).forEach((item) => {
+        const completed = item.is_completed === 1 || item.is_completed === true ? 'Completed' : 'Not completed';
+        addWrappedText(pdf, `- ${item.item_name || ''} (${completed})`, 18, pageState.y, 177, 5, pageState);
+      });
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Uploaded Evidence', pageState);
+      if ((report.evidence || []).length === 0) {
+        addWrappedText(pdf, 'No uploaded evidence files yet.', 18, pageState.y, 177, 5, pageState);
+      } else {
+        (report.evidence || []).forEach((item) => {
+          addWrappedText(pdf, `- ${item.file_name || ''} | ${item.file_type || ''} | ${item.description || '-'} | ${formatDate(item.uploaded_at)}`, 18, pageState.y, 177, 5, pageState);
+        });
+      }
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Recommended Contacts', pageState);
+      (report.recommended_contacts || []).forEach((item) => {
+        const contact = item.number || item.email || item.website || '-';
+        addWrappedText(pdf, `- ${item.name || ''} (${item.type || ''}) ${contact}`, 18, pageState.y, 177, 5, pageState);
+      });
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Formal Message', pageState);
+      addWrappedText(pdf, report.formal_message || '', 15, pageState.y, 180, 5, pageState);
+      pageState.y += 2;
+
+      writeSectionTitle(pdf, 'Disclaimer', pageState);
+      addWrappedText(pdf, 'This report is generated for guidance only. It is not an official police report, legal filing, medical diagnosis, or professional advice.', 15, pageState.y, 180, 5, pageState);
+
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i += 1) {
+        pdf.setPage(i);
+        pdf.setFontSize(9);
+        pdf.text(`Page ${i} of ${totalPages}`, 105, 290, { align: 'center' });
+      }
+
+      pdf.save(`SafeStay_Case_${caseId}_Report.pdf`);
+    } catch (err) {
+      showReportError('Could not generate PDF. Please try again.');
+    }
+  }
+
+  function collapseReport() {
+    document.getElementById('report-preview').style.display = 'none';
+    setReportButtonsVisible(false);
+    REPORT_EXPANDED = false;
+  }
+
+  async function loadCaseResult() {
+    const cached = sessionStorage.getItem('safestay_analysis');
+    let renderedFromCache = false;
+    if (cached) {
+      try {
+        renderAnalysis(JSON.parse(cached));
+        renderedFromCache = true;
+      } catch (e) {
+        console.warn('Bad cached analysis:', e);
+      }
+    }
+
+    if (!caseId) {
+      if (!renderedFromCache) {
+        showError(window.t('result.noCaseSpecified'));
+      }
+      if (window.location.hash === '#formal-report') {
+        showReportError('No case_id found. Please open this page from a case in history or case details.');
+      }
+      return;
+    }
+
+    try {
+      const response = await safeStayAPI.getCase(caseId);
+      CURRENT_CASE_RESPONSE = response;
+      const caseData = {
+        ...(response.case || response || {}),
+        ...(response.analysis_data || {}),
+        checklist: response.checklist || []
+      };
+      renderAnalysis(caseData);
+    } catch (err) {
+      console.error('Failed to load case result:', err);
+      if (!renderedFromCache) {
+        showError(window.t('result.loadError', { message: err.message }));
+      }
+    }
+
+    if (window.location.hash === '#formal-report') {
+      document.getElementById('formal-report').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      await generateReport(false);
+    }
+  }
+
+  function initEntranceAnimations() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    document.body.classList.add('js-motion');
+    requestAnimationFrame(() => {
+      document.body.classList.add('page-loaded');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initEntranceAnimations();
+    loadCaseResult();
+  });
+</script>
 
 </body>
 </html>

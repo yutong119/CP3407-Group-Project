@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SafeStay – Home</title>
+<title data-i18n="pageTitles.home">SafeStay – Home</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -227,38 +227,51 @@
     .hero-actions .btn { width: 100%; justify-content: center; }
   }
 </style>
+<link rel="stylesheet" href="responsive.css" />
 </head>
 <body>
 
 <nav>
-  <div class="nav-brand">
+  <a class="nav-brand" href="index.html" aria-label="SafeStay home">
     <div class="shield">🛡</div>
-    SafeStay
-  </div>
+    <span>SafeStay</span>
+  </a>
   <div class="nav-right">
-    <div class="nav-lang">🌐 English ▾</div>
-    <button class="btn-nav outline" onclick="location.href='login.html'">Log in</button>
-    <button class="btn-nav primary" onclick="location.href='login.html'">Register</button>
+    <div class="nav-lang" id="nav-lang" onclick="location.href='language.html?return_to=index.html'">🌐 <span id="nav-lang-text">English</span> ▾</div>
+  <script>
+    (function () {
+      var saved = localStorage.getItem('safestay_preferred_language');
+      var code = saved && ['en', 'zh-CN', 'ja', 'fr'].includes(saved) ? saved : 'en';
+      var textEl = document.getElementById('nav-lang-text');
+      if (textEl) {
+        textEl.textContent = window.t ? window.t('languages.' + code) : code;
+      }
+    })();
+  </script>
+    <button class="btn-nav outline" id="nav-history-btn" style="display:none" onclick="location.href='history.html'" data-i18n="nav.myCases">My Cases</button>
+    <button class="btn-nav outline" id="nav-profile-btn" style="display:none" onclick="location.href='profile.html'" data-i18n="nav.profile">Profile</button>
+    <button class="btn-nav outline" id="nav-login-btn" onclick="location.href='login.html'" data-i18n="nav.login">Log in</button>
+    <button class="btn-nav primary" id="nav-register-btn" onclick="location.href='login.html'" data-i18n="nav.register">Register</button>
   </div>
 </nav>
 
 <div class="landing-hero">
   <div class="hero-inner">
-    <div class="hero-badge">🌍 For International Students</div>
-    <h1 class="hero-title">Help When You Need It,<br/>Peace of Mind Always</h1>
-    <p class="hero-sub">Describe your situation and get instant guidance, recommended contacts, and support — in your language.</p>
+    <div class="hero-badge" data-i18n="index.heroBadge">🌍 For International Students</div>
+    <h1 class="hero-title" data-i18n="index.heroTitle">Help When You Need It,<br/>Peace of Mind Always</h1>
+    <p class="hero-sub" data-i18n="index.heroSub">Describe your situation and get instant guidance, recommended contacts, and support — in your language.</p>
     <div class="hero-actions">
-      <button class="btn btn-primary" onclick="location.href='describe.html'">
+      <button class="btn btn-primary" onclick="location.href='describe.html'" data-i18n="index.getStarted">
         Get Started →
       </button>
-      <button class="btn" style="color:#fff;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);padding:12px 24px;font-size:15px" onclick="location.href='login.html'">
+      <button class="btn" style="color:#fff;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);padding:12px 24px;font-size:15px" onclick="location.href='login.html'" data-i18n="index.signIn">
         Sign in
       </button>
     </div>
     <div class="hero-stats">
-      <div class="stat-chip"><strong>6</strong> Case types</div>
-      <div class="stat-chip"><strong>7+</strong> Languages</div>
-      <div class="stat-chip"><strong>24/7</strong> Available</div>
+      <div class="stat-chip"><strong>6</strong> <span data-i18n="index.caseTypes">Case types</span></div>
+      <div class="stat-chip"><strong>7+</strong> <span data-i18n="index.languages">Languages</span></div>
+      <div class="stat-chip"><strong>24/7</strong> <span data-i18n="index.available">Available</span></div>
     </div>
   </div>
 </div>
@@ -266,47 +279,72 @@
 <div class="section-wrap" style="padding-top:0;">
   <div class="emergency-banner">
     <div class="emergency-banner-text">
-      <strong>🚨 I need immediate help</strong>
-      <span>Contact emergency services right away.</span>
+      <strong data-i18n="index.emergencyTitle">🚨 I need immediate help</strong>
+      <span data-i18n="index.emergencyText">Contact emergency services right away.</span>
     </div>
-    <button class="btn btn-danger">Emergency Contacts 📞</button>
+    <button class="btn btn-danger" onclick="location.href='contacts.html'" data-i18n="index.emergencyButton">Emergency Contacts 📞</button>
   </div>
 </div>
 
 <div class="section-wrap">
   <div class="section-header">
-    <h2>Common Cases</h2>
-    <a href="#">View all cases →</a>
+    <h2 data-i18n="index.commonCases">Common Cases</h2>
+    <a href="history.html" data-i18n="index.viewAllCases">View all cases →</a>
   </div>
   <div class="cases-grid">
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Theft">
       <div class="case-icon" style="background:#EFF6FF">🛍️</div>
-      <span>Theft</span>
+      <span data-i18n="index.theft">Theft</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Lost%20Passport">
       <div class="case-icon" style="background:#FEF2F2">🛂</div>
-      <span>Lost Passport</span>
+      <span data-i18n="index.lostPassport">Lost Passport</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Scam">
       <div class="case-icon" style="background:#FFFBEB">💻</div>
-      <span>Scam</span>
+      <span data-i18n="index.scam">Scam</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Rental%20Dispute">
       <div class="case-icon" style="background:#F0FDF4">🏠</div>
-      <span>Rental Dispute</span>
+      <span data-i18n="index.rentalDispute">Rental Dispute</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Medical%20Emergency">
       <div class="case-icon" style="background:#FFF1F2">🏥</div>
-      <span>Medical Emergency</span>
+      <span data-i18n="index.medicalEmergency">Medical Emergency</span>
     </a>
-    <a class="case-card" href="describe.html">
+    <a class="case-card" href="describe.html?case_type=Other">
       <div class="case-icon" style="background:#F9FAFB">•••</div>
-      <span>Other</span>
+      <span data-i18n="index.other">Other</span>
     </a>
   </div>
 </div>
 
-<p class="footer-note">We support international students. You are not alone.</p>
+<p class="footer-note" data-i18n="index.footer">We support international students. You are not alone.</p>
+
+<script src="i18n.js"></script>
+<script src="api.js"></script>
+<script>
+  // If the user already has a session, swap "Log in / Register" for account actions
+  document.addEventListener('DOMContentLoaded', async () => {
+    await window.initI18n();
+    if (safeStayAPI.token) {
+      const loginBtn    = document.getElementById('nav-login-btn');
+      const registerBtn = document.getElementById('nav-register-btn');
+
+      document.getElementById('nav-history-btn').style.display = 'inline-flex';
+      document.getElementById('nav-profile-btn').style.display = 'inline-flex';
+
+      loginBtn.textContent = window.t('nav.logout');
+      loginBtn.onclick = () => {
+        safeStayAPI.clearToken();
+        location.reload();
+      };
+
+      registerBtn.textContent = window.t('nav.describeCase');
+      registerBtn.onclick = () => location.href = 'describe.html';
+    }
+  });
+</script>
 
 </body>
 </html>

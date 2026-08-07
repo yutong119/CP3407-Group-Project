@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="pageTitles.evidence">Evidence Checklist – SafeStay</title>
+  <script src="i18n.js"></script>
+  <script src="api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+    .badge-high {
+      margin-left: auto;
+      background: #E02424; color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: #fff;
+      padding: 20px 16px 0;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #111827; }
+    .page-sub   { font-size: 13px; color: #6B7280; margin: 4px 0 16px; }
+    .count-label { font-size: 13px; color: #6B7280; text-align: right; }
+    .count-sub   { font-size: 11px; color: #6B7280; }
+
+    /* Progress bar */
+    .progress-wrap { padding-bottom: 20px; }
+    .progress-track {
+      height: 8px; background: #E5E7EB;
+      border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: #1A56DB;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .progress-labels {
+      display: flex; justify-content: space-between; margin-top: 4px;
+    }
+    .progress-text { font-size: 12px; color: #6B7280; }
+    .progress-pct  { font-size: 12px; font-weight: 600; color: #1A56DB; }
+
+    /* ── Checklist ── */
+    .checklist-body {
+      background: #fff;
+      padding: 0 16px;
+      margin-top: 8px;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid #E5E7EB;
+      cursor: pointer;
+      user-select: none;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+
+    .checkbox {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 2px solid #E5E7EB;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .checkbox.checked {
+      background: #1A56DB;
+      border-color: #1A56DB;
+    }
+    .checkbox svg { display: none; }
+    .checkbox.checked svg { display: block; }
+
+    .item-label {
+      font-size: 15px;
+      color: #111827;
+      flex: 1;
+      transition: all 0.15s;
+    }
+    .item-label.done {
+      color: #6B7280;
+      text-decoration: line-through;
+    }
+
+    .badge-important {
+      font-size: 11px;
+      background: #FDF2F2; color: #E02424;
+      padding: 2px 8px; border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    /* ── AI Tip ── */
+    .ai-tip-box {
+      margin: 16px 16px 0;
+      background: #EBF2FF;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .ai-tip-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0;
+    }
+    .ai-tip-title { font-size: 14px; font-weight: 600; color: #1240A8; }
+    .btn-get-tip {
+      background: #1A56DB; color: #fff;
+      border: none; border-radius: 8px;
+      padding: 6px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-get-tip:disabled { opacity: 0.7; cursor: not-allowed; }
+    .ai-tip-text {
+      font-size: 14px; color: #1240A8;
+      line-height: 1.6; margin-top: 10px;
+    }
+    .ai-tip-placeholder {
+      font-size: 13px; color: #1A56DB;
+      opacity: 0.8; margin-top: 6px;
+    }
+
+    /* ── Error ── */
+    .error-box {
+      margin: 12px 16px 0;
+      background: #FDF2F2; color: #E02424;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px;
+      display: none;
+    }
+
+    /* ── Save button ── */
+    .save-wrap { padding: 16px 16px 0; }
+    .btn-save {
+      width: 100%; padding: 16px;
+      background: #1A56DB; color: #fff;
+      border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-save:disabled { opacity: 0.8; cursor: not-allowed; }
+    .btn-save.saved { background: #057A55; }
+  </style>
+<link rel="stylesheet" href="responsive.css" />
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <a href="index.html" class="appbar-icon" style="text-decoration:none">🛡️</a>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub" id="case-subtitle" data-i18n="common.loading">Theft Case · THF-2024-00023</div>
+    </div>
+    <div class="badge-high" id="urgency-badge">HIGH</div>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="header-row">
+      <div>
+        <h2 class="page-title" id="page-title" data-i18n="evidence.pageTitle">Theft Evidence Checklist</h2>
+        <p class="page-sub" data-i18n="evidence.pageSub">Collecting strong evidence can increase the chance of recovery.</p>
+      </div>
+      <div>
+        <div class="count-label"><span id="count-done">3</span> / <span id="count-total">7</span></div>
+        <div class="count-sub">completed</div>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width: 43%"></div>
+      </div>
+      <div class="progress-labels">
+        <span class="progress-text" data-i18n="evidence.progress">Progress</span>
+        <span class="progress-pct" id="progress-pct">43%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checklist items -->
+  <div class="checklist-body" id="checklist-body"></div>
+
+  <!-- Error -->
+  <div class="error-box" id="error-box"></div>
+
+  <!-- Save -->
+  <div class="save-wrap">
+    <button class="btn-save" id="btn-save" onclick="handleSave()" data-i18n="evidence.save">💾  Save Checklist</button>
+  </div>
+
+</div>
+
+<script>
+  // Case context – case_id comes from the URL (?case_id=...), the rest are
+  // fallback defaults used only if no analysis/case data is available yet.
+  const params = new URLSearchParams(window.location.search);
+  const CASE_ID   = params.get('case_id');
+  let CASE_TYPE = 'Theft';
+
+  // ── Checklist data ────────────────────────────────────────────────────────
+  // Fallback defaults — overwritten by evidence_checklist from the analysis if present
+  let ITEMS = [
+    { id: 1, label: 'Photos of the scene',         required: true  },
+    { id: 2, label: 'Receipts / Proof of ownership', required: true  },
+    { id: 3, label: 'CCTV Footage',                required: true  },
+    { id: 4, label: 'Witness Information',          required: false },
+    { id: 5, label: 'Police Report / Case Number',  required: false },
+    { id: 6, label: 'Other Relevant Documents',     required: false },
+    { id: 7, label: 'Anything else helpful',        required: false },
+  ];
+
+  const checked = {};
+
+  function getCachedAnalysis() {
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (!cached) return null;
+    try {
+      return JSON.parse(cached);
+    } catch (e) {
+      console.warn('Bad cached analysis:', e);
+      return null;
+    }
+  }
+
+  function mapTemplateItems(templates) {
+    return templates.map((item, index) => {
+      const templateId = item.template_id || item.id || index + 1;
+      const label = item.item_name || item.label || '';
+      return {
+        id: templateId,
+        template_id: item.template_id || null,
+        label,
+        required: item.is_required === 1 || item.is_required === true || item.required === true,
+        is_completed: false
+      };
+    });
+  }
+
+  function applyCheckedStateFromItems() {
+    Object.keys(checked).forEach((key) => delete checked[key]);
+    ITEMS.forEach((item) => {
+      checked[item.id] = !!item.is_completed;
+    });
+  }
+
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
+  // ── Render checklist ──────────────────────────────────────────────────────
+  function renderChecklist() {
+    const body = document.getElementById('checklist-body');
+    body.innerHTML = '';
+
+    ITEMS.forEach((item, idx) => {
+      const isChecked = !!checked[item.id];
+
+      const row = document.createElement('div');
+      row.className = 'checklist-item';
+      row.onclick = () => toggle(item.id);
+
+      row.innerHTML = `
+        <div class="checkbox ${isChecked ? 'checked' : ''}" id="cb-${item.id}">
+          <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+            <path d="M1 5L5 9L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="item-label ${isChecked ? 'done' : ''}" id="lbl-${item.id}">${resolveDisplayText('checklistItems.' + item.label, item.label)}</span>
+        ${item.required && !isChecked ? `<span class="badge-important" id="badge-${item.id}">Important</span>` : `<span id="badge-${item.id}"></span>`}
+      `;
+
+      body.appendChild(row);
+    });
+
+    updateProgress();
+  }
+
+  function toggle(id) {
+    checked[id] = !checked[id];
+
+    const cb  = document.getElementById('cb-' + id);
+    const lbl = document.getElementById('lbl-' + id);
+    const bdg = document.getElementById('badge-' + id);
+    const item = ITEMS.find(i => i.id === id);
+
+    if (checked[id]) {
+      cb.classList.add('checked');
+      lbl.classList.add('done');
+      if (bdg) bdg.innerHTML = '';
+    } else {
+      cb.classList.remove('checked');
+      lbl.classList.remove('done');
+      if (bdg && item.required) bdg.innerHTML = '<span class="badge-important">' + window.t('evidence.important') + '</span>';
+    }
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done  = Object.values(checked).filter(Boolean).length;
+    const total = ITEMS.length;
+    const pct   = Math.round((done / total) * 100);
+
+    document.getElementById('count-done').textContent  = done;
+    document.getElementById('count-total').textContent = total;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent  = pct + '%';
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+  async function handleSave() {
+    const btn = document.getElementById('btn-save');
+    const errBox = document.getElementById('error-box');
+
+    btn.disabled = true;
+    btn.textContent = window.t('evidence.saveLoading');
+    errBox.style.display = 'none';
+
+    try {
+      const items = ITEMS
+        .filter(item => item.checklist_id)
+        .map(item => ({
+          checklist_id: item.checklist_id,
+          is_completed: !!checked[item.id]
+        }));
+
+      if (!CASE_ID) {
+        throw new Error('No case selected');
+      }
+
+      if (items.length === 0) {
+        throw new Error('No saved checklist items are available for this case');
+      }
+
+      await safeStayAPI.updateChecklist(CASE_ID, items);
+
+      btn.classList.add('saved');
+      btn.textContent = window.t('evidence.saveSuccess');
+      setTimeout(() => {
+        btn.classList.remove('saved');
+        btn.textContent = window.t('evidence.save');
+        btn.disabled = false;
+      }, 2500);
+    } catch (err) {
+      errBox.textContent = window.t('evidence.saveError', { message: err.message || '' });
+      errBox.style.display = 'block';
+      btn.textContent = window.t('evidence.save');
+      btn.disabled = false;
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    const cachedAnalysis = getCachedAnalysis();
+    if (cachedAnalysis && cachedAnalysis.detected_case) {
+      CASE_TYPE = cachedAnalysis.detected_case;
+    }
+
+    if (cachedAnalysis && Array.isArray(cachedAnalysis.evidence_checklist) && cachedAnalysis.evidence_checklist.length) {
+      ITEMS = mapTemplateItems(cachedAnalysis.evidence_checklist);
+      applyCheckedStateFromItems();
+      renderChecklist();
+    }
+
+    // Try to load live case data from backend
+    if (CASE_ID) {
+      try {
+        const response = await safeStayAPI.getCase(CASE_ID);
+        const caseData = response.case || {};
+        const savedChecklist = response.checklist || [];
+        const analysisData = response.analysis_data || {};
+
+        if (caseData.detected_case) {
+          CASE_TYPE = caseData.detected_case;
+        }
+
+        if (Array.isArray(savedChecklist) && savedChecklist.length) {
+          ITEMS = savedChecklist.map(item => ({
+            id: item.checklist_id,
+            checklist_id: item.checklist_id,
+            label: item.item_name,
+            required: false,
+            is_completed: item.is_completed === 1 || item.is_completed === true
+          }));
+        } else {
+          const backendTemplates = Array.isArray(analysisData.evidence_checklist)
+            ? analysisData.evidence_checklist
+            : [];
+          if (backendTemplates.length) {
+            ITEMS = mapTemplateItems(backendTemplates);
+          } else if (cachedAnalysis && Array.isArray(cachedAnalysis.evidence_checklist) && cachedAnalysis.evidence_checklist.length) {
+            ITEMS = mapTemplateItems(cachedAnalysis.evidence_checklist);
+          }
+        }
+
+        applyCheckedStateFromItems();
+        renderChecklist();
+
+        document.getElementById('page-title').textContent = window.t('evidence.pageTitle');
+        const detectedCaseValue = caseData.detected_case || CASE_TYPE;
+        const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
+        document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;
+        document.getElementById('urgency-badge').textContent =
+          (caseData.urgency_level || 'HIGH').toUpperCase();
+      } catch (e) {
+        // Backend unavailable – fall back to local templates/defaults
+        console.warn('Could not load case from backend:', e.message);
+        applyCheckedStateFromItems();
+        renderChecklist();
+      }
+    } else {
+      applyCheckedStateFromItems();
+      renderChecklist();
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

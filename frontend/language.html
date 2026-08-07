@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="pageTitles.language">Language – SafeStay</title>
+  <script src="i18n.js"></script>
+  <script src="api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+
+    .page-header {
+      background: #fff;
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #111827; }
+    .page-sub   { font-size: 13px; color: #6B7280; margin-top: 4px; }
+
+    /* ── Language list ── */
+    .lang-list {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .lang-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid #F3F4F6;
+      cursor: pointer;
+    }
+    .lang-row:last-child { border-bottom: none; }
+    .lang-flag { font-size: 20px; width: 26px; text-align: center; flex-shrink: 0; }
+    .lang-body { flex: 1; }
+    .lang-name { font-size: 14px; font-weight: 600; color: #111827; }
+    .lang-native { font-size: 12px; color: #6B7280; }
+    .lang-check { color: #1A56DB; font-size: 16px; font-weight: 700; visibility: hidden; flex-shrink: 0; }
+    .lang-row.selected .lang-check { visibility: visible; }
+
+    .save-note {
+      margin: 12px 16px 0;
+      font-size: 13px; color: #057A55;
+      display: none;
+    }
+    .error-box {
+      margin: 12px 16px 0;
+      background: #FDF2F2; color: #E02424;
+      padding: 10px 14px; border-radius: 10px;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+<link rel="stylesheet" href="responsive.css" />
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <a href="profile.html" class="appbar-icon" id="appbar-back">←</a>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub" data-i18n="profile.language">Language Support</div>
+    </div>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title" data-i18n="language.pageTitle">Choose your language</div>
+    <div class="page-sub" data-i18n="language.pageSub">SafeStay guidance will be shown in this language where available</div>
+  </div>
+
+  <div class="lang-list" id="lang-list"></div>
+
+  <div class="save-note" id="save-note" data-i18n="language.saved">✓ Language preference saved</div>
+  <div class="error-box" id="error-box"></div>
+
+  <a href="profile.html" id="btn-done" style="display:block;margin:20px 16px 0;padding:13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:14px;font-weight:600;color:#374151;text-align:center;text-decoration:none" data-i18n="language.done">Done</a>
+
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const RETURN_TO = params.get('return_to') || 'profile.html';
+  document.getElementById('appbar-back').href = RETURN_TO;
+  document.getElementById('btn-done').href = RETURN_TO;
+
+  const BACKEND_LANGUAGE_NAMES = {
+    en: 'English',
+    'zh-CN': 'Chinese (Simplified)',
+    ja: 'Japanese',
+    fr: 'French'
+  };
+
+  const LANGUAGE_CODES = Object.keys(BACKEND_LANGUAGE_NAMES);
+  const LANGUAGE_DISPLAY_NAMES = Object.fromEntries(
+    Object.entries(BACKEND_LANGUAGE_NAMES).map(([code, label]) => [label, code])
+  );
+
+  const LANGUAGES = [
+    { code: 'en', label: 'English', flag: '🇬🇧', native: 'English' },
+    { code: 'zh-CN', label: 'Chinese (Simplified)', flag: '🇨🇳', native: '中文（简体）' },
+    { code: 'ja', label: 'Japanese', flag: '🇯🇵', native: '日本語' },
+    { code: 'fr', label: 'French', flag: '🇫🇷', native: 'Français' },
+  ];
+
+  let CURRENT_LANGUAGE = 'en';
+  let CURRENT_NAME = '';
+
+  function normalizeLanguageCode(value) {
+    if (typeof value !== 'string') return 'en';
+    const trimmed = value.trim();
+    if (LANGUAGE_CODES.includes(trimmed)) return trimmed;
+    if (LANGUAGE_DISPLAY_NAMES[trimmed]) return LANGUAGE_DISPLAY_NAMES[trimmed];
+    return 'en';
+  }
+
+  function render() {
+    const list = document.getElementById('lang-list');
+    list.innerHTML = LANGUAGES.map(l => `
+      <div class="lang-row ${l.code === CURRENT_LANGUAGE ? 'selected' : ''}" data-code="${l.code}">
+        <span class="lang-flag">${l.flag}</span>
+        <div class="lang-body">
+          <div class="lang-name">${l.label}</div>
+          <div class="lang-native">${l.native}</div>
+        </div>
+        <span class="lang-check">✓</span>
+      </div>
+    `).join('');
+
+    list.querySelectorAll('.lang-row').forEach(row => {
+      row.addEventListener('click', () => selectLanguage(row.dataset.code));
+    });
+  }
+
+  async function selectLanguage(code) {
+    const selectedLanguageCode = normalizeLanguageCode(code);
+    if (selectedLanguageCode === CURRENT_LANGUAGE) return;
+
+    const errBox = document.getElementById('error-box');
+    const note = document.getElementById('save-note');
+    errBox.style.display = 'none';
+    note.style.display = 'none';
+
+    const previous = CURRENT_LANGUAGE;
+    CURRENT_LANGUAGE = selectedLanguageCode;
+    render();
+
+    try {
+      await safeStayAPI.updateProfile(CURRENT_NAME, BACKEND_LANGUAGE_NAMES[selectedLanguageCode]);
+      localStorage.setItem('safestay_preferred_language', selectedLanguageCode);
+      if (typeof window.changeLanguage === 'function') {
+        await window.changeLanguage(selectedLanguageCode);
+      }
+      note.style.display = 'block';
+      setTimeout(() => { window.location.href = RETURN_TO; }, 900);
+    } catch (err) {
+      CURRENT_LANGUAGE = previous;
+      render();
+      errBox.textContent = window.t('language.saveError', { message: err.message || '' });
+      errBox.style.display = 'block';
+    }
+  }
+
+  async function init() {
+    if (!safeStayAPI.token) {
+      location.href = 'login.html';
+      return;
+    }
+
+    // Read the current name + language from the backend first so we don't
+    // overwrite the user's name with a blank value when saving language.
+    try {
+      const response = await safeStayAPI.getUserProfile();
+      const profile = response.user || response;
+      CURRENT_NAME = profile.full_name || profile.name || '';
+
+      const storedLanguageCode = localStorage.getItem('safestay_preferred_language');
+      if (storedLanguageCode && LANGUAGE_CODES.includes(storedLanguageCode.trim())) {
+        CURRENT_LANGUAGE = storedLanguageCode.trim();
+        localStorage.setItem('safestay_preferred_language', CURRENT_LANGUAGE);
+      } else if (profile.preferred_language) {
+        CURRENT_LANGUAGE = normalizeLanguageCode(profile.preferred_language);
+        localStorage.setItem('safestay_preferred_language', CURRENT_LANGUAGE);
+      } else if (storedLanguageCode) {
+        CURRENT_LANGUAGE = normalizeLanguageCode(storedLanguageCode);
+      }
+    } catch (err) {
+      console.warn('Could not load profile:', err.message);
+    }
+
+    render();
+  }
+
+  init();
+</script>
+</body>
+</html>

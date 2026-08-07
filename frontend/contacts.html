@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="pageTitles.contacts">Emergency Contacts – SafeStay</title>
+  <script src="i18n.js"></script>
+  <script src="api.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F9FAFB;
+      min-height: 100vh;
+    }
+
+    .app-wrapper {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #F9FAFB;
+      padding-bottom: 40px;
+    }
+
+    /* ── App bar ── */
+    .appbar {
+      background: #1A56DB;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .appbar-icon {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      text-decoration: none;
+    }
+    .appbar-title { color: #fff; font-weight: 700; font-size: 16px; }
+    .appbar-sub   { color: rgba(255,255,255,0.75); font-size: 12px; }
+    .badge-high {
+      margin-left: auto;
+      background: #E02424; color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px;
+    }
+
+    /* ── Page header ── */
+    .page-header {
+      background: #fff;
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .page-title { font-size: 18px; font-weight: 700; color: #111827; }
+    .page-sub   { font-size: 13px; color: #6B7280; margin-top: 4px; }
+
+    /* ── AI Banner ── */
+    .ai-banner {
+      margin: 16px 16px 0;
+      background: #FDF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .ai-banner-icon { font-size: 20px; flex-shrink: 0; }
+    .ai-banner-label {
+      font-size: 13px; font-weight: 700;
+      color: #E02424; margin-bottom: 4px;
+    }
+    .ai-banner-text { font-size: 13px; color: #991B1B; line-height: 1.5; display: none; }
+    .ai-banner-loading { font-size: 13px; color: #6B7280; }
+
+    /* ── Contact list ── */
+    .contact-list { padding: 16px 16px 0; }
+
+    .contact-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .contact-icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+
+    .contact-name   { font-size: 15px; font-weight: 600; color: #111827; }
+    .contact-number { font-size: 13px; color: #6B7280; margin-top: 2px; }
+
+    .btn-call {
+      min-height: 44px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-call.success { background: #057A55 !important; }
+    .btn-call:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+    .contact-detail {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    .call-toast {
+      margin: 10px 16px 0;
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1E3A8A;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .call-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 300;
+      padding: 16px;
+    }
+    .call-modal.open { display: flex; }
+    .call-modal-card {
+      width: min(100%, 420px);
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      padding: 16px;
+    }
+    .call-modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+    .call-modal-msg {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #374151;
+      overflow-wrap: anywhere;
+    }
+    .call-modal-number {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #1D4ED8;
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+    .call-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .call-modal-btn {
+      min-height: 44px;
+      border-radius: 10px;
+      border: none;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .call-modal-btn.primary {
+      background: #1A56DB;
+      color: #fff;
+    }
+    .call-modal-btn.outline {
+      background: #fff;
+      color: #374151;
+      border: 1px solid #D1D5DB;
+    }
+
+    /* ── Map button ── */
+    .map-wrap { margin: 4px 16px 0; }
+    .btn-map {
+      width: 100%; padding: 14px;
+      background: #fff;
+      border: 1px solid #1A56DB;
+      border-radius: 12px;
+      font-size: 15px; font-weight: 600;
+      color: #1A56DB; cursor: pointer;
+      display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+
+    /* ── Recommended Actions ── */
+    .actions-box {
+      margin: 16px 16px 0;
+      background: #fff;
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .actions-title { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 12px; }
+
+    .action-row {
+      display: flex; gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .action-row:last-child { margin-bottom: 0; }
+
+    .action-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #1A56DB; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .action-text { font-size: 14px; color: #111827; line-height: 1.5; }
+  </style>
+<link rel="stylesheet" href="responsive.css" />
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- App bar -->
+  <div class="appbar">
+    <a href="index.html" class="appbar-icon">🛡️</a>
+    <div>
+      <div class="appbar-title">SafeStay</div>
+      <div class="appbar-sub" id="case-subtitle" data-i18n="common.loading">Loading…</div>
+    </div>
+    <div class="badge-high" id="urgency-badge">HIGH</div>
+  </div>
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="page-title" data-i18n="contacts.pageTitle">Recommended Contacts</div>
+    <div class="page-sub" data-i18n="contacts.pageSub">Based on your situation and location</div>
+  </div>
+
+  <!-- AI Priority Banner -->
+  <div class="ai-banner">
+    <div class="ai-banner-icon">🚨</div>
+    <div>
+      <div class="ai-banner-label" id="banner-label" data-i18n="contacts.bannerLabel">Urgency: High — AI Recommendation</div>
+      <div class="ai-banner-loading" id="banner-loading" data-i18n="contacts.bannerLoading">Analysing your situation…</div>
+      <div class="ai-banner-text" id="banner-text"></div>
+    </div>
+  </div>
+
+  <!-- Contact list -->
+  <div class="contact-list" id="contact-list"></div>
+  <div class="call-toast" id="call-toast"></div>
+
+  <!-- Map -->
+  <div class="map-wrap">
+    <button class="btn-map" onclick="openMap()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="#1A56DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+      <span data-i18n="contacts.viewOnMap">View on Map</span>
+    </button>
+  </div>
+
+  <!-- Recommended Actions -->
+  <div class="actions-box">
+    <div class="actions-title" data-i18n="contacts.recommendedActions">Recommended Actions</div>
+    <div id="actions-list"></div>
+  </div>
+
+  <div class="call-modal" id="call-modal" role="dialog" aria-modal="true" aria-labelledby="call-modal-title">
+    <div class="call-modal-card">
+      <div class="call-modal-title" id="call-modal-title" data-i18n="contacts.callModalTitle">Call from a mobile device</div>
+      <div class="call-modal-msg" id="call-modal-msg"></div>
+      <div class="call-modal-number" id="call-modal-number"></div>
+      <div class="call-modal-actions">
+        <button class="call-modal-btn primary" id="call-copy-btn" type="button" data-i18n="contacts.copyNumber">Copy Number</button>
+        <button class="call-modal-btn outline" id="call-close-btn" type="button" data-i18n="contacts.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Case context – case_id comes from the URL (?case_id=...), the rest are
+  // fallback defaults used only if no analysis/case data is available yet.
+  const params = new URLSearchParams(window.location.search);
+  const CASE_ID   = params.get('case_id') || 'THF-2024-00023';
+  let CASE_TYPE = 'Theft';
+  let CASE_DESC = 'Bag stolen at University Library on 12 May 2024, 6:30PM. Stolen: laptop, wallet, important documents.';
+  let CASE_LOC  = 'University Library, Singapore';
+  let URGENCY   = 'High';
+  let LAST_FOCUSED_CALL_TRIGGER = null;
+  let CURRENT_MODAL_PHONE = '';
+  let RECOMMENDED_ACTIONS = [];
+  let HAS_AI_ACTIONS = false;
+
+  // ── Contacts data ─────────────────────────────────────────────────────────
+  // Fallback defaults — overwritten by recommended_contacts from the analysis if present
+  let CONTACTS = [
+    { id: 1, name: 'Police (Emergency)',  number: '999',             icon: '🚔', color: '#1A56DB' },
+    { id: 2, name: 'University Support',  number: '+65 6516 1177', icon: '🏫', color: '#057A55' },
+    { id: 3, name: 'Singapore Embassy',   number: '+65 6235 4555',   icon: '🏛️', color: '#C27803' },
+    { id: 4, name: 'Legal Aid Bureau',    number: '+65 1800 225 5529',    icon: '⚖️', color: '#7C3AED' },
+    { id: 5, name: 'Nearest Hospital',    number: '+65 6535 8833', icon: '🏥', color: '#E02424' },
+  ];
+
+  // Load the analysis produced on describe.html (page 4), if present
+  function loadAnalysis() {
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (!cached) return;
+    try {
+      const analysis = JSON.parse(cached);
+      if (Array.isArray(analysis.recommended_contacts) && analysis.recommended_contacts.length) {
+        CONTACTS = analysis.recommended_contacts;
+      }
+      if (analysis.detected_case) CASE_TYPE = analysis.detected_case;
+      if (analysis.urgency_level) URGENCY = analysis.urgency_level;
+    } catch (e) {
+      console.warn('Bad cached analysis:', e);
+    }
+  }
+
+  function resolveDisplayText(key, fallback) {
+    const translated = window.t(key);
+    return translated && translated !== key ? translated : fallback;
+  }
+
+  function getFallbackActions() {
+    return [
+      window.t('contacts.action1'),
+      window.t('contacts.action2'),
+      window.t('contacts.action3'),
+      window.t('contacts.action4'),
+      window.t('contacts.action5')
+    ];
+  }
+
+  function renderRecommendedActions(actions, source = 'fallback') {
+    const list = document.getElementById('actions-list');
+    const safeActions = (Array.isArray(actions) ? actions : [])
+      .map(item => (typeof item === 'string' ? item.trim() : ''))
+      .filter(Boolean);
+
+    const finalActions = safeActions.length ? safeActions : getFallbackActions();
+    RECOMMENDED_ACTIONS = finalActions;
+    HAS_AI_ACTIONS = source === 'ai' && safeActions.length > 0;
+
+    list.innerHTML = '';
+    finalActions.forEach((text, index) => {
+      const row = document.createElement('div');
+      row.className = 'action-row';
+      row.innerHTML = `
+        <div class="action-num">${index + 1}</div>
+        <div class="action-text"></div>
+      `;
+      row.querySelector('.action-text').textContent = text;
+      list.appendChild(row);
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('call-toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(() => {
+      toast.style.display = 'none';
+    }, 2200);
+  }
+
+  function closeCallModal() {
+    const modal = document.getElementById('call-modal');
+    modal.classList.remove('open');
+    if (LAST_FOCUSED_CALL_TRIGGER) {
+      LAST_FOCUSED_CALL_TRIGGER.focus();
+    }
+  }
+
+  window.showCallMessage = function showCallMessage(message, phoneNumber) {
+    const modal = document.getElementById('call-modal');
+    const msg = document.getElementById('call-modal-msg');
+    const number = document.getElementById('call-modal-number');
+    const copyBtn = document.getElementById('call-copy-btn');
+
+    CURRENT_MODAL_PHONE = phoneNumber || '';
+    msg.textContent = message;
+    number.textContent = phoneNumber
+      ? window.t('contacts.phoneNumberLabel', { phone: phoneNumber })
+      : '';
+    copyBtn.style.display = phoneNumber ? 'inline-flex' : 'none';
+    modal.classList.add('open');
+    document.getElementById('call-close-btn').focus();
+  };
+
+  function buildActionButton(contact, translatedName) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-call';
+
+    const hasNumber = !!(contact.number && String(contact.number).trim());
+    const hasEmail = !!(contact.email && String(contact.email).trim());
+    const hasWebsite = !!(contact.website && String(contact.website).trim());
+
+    if (hasNumber) {
+      btn.style.background = contact.color || '#1A56DB';
+      btn.textContent = window.t('contacts.buttonCall');
+      btn.setAttribute('aria-label', window.t('contacts.callAria', { name: translatedName }));
+      btn.addEventListener('click', () => {
+        LAST_FOCUSED_CALL_TRIGGER = btn;
+        window.handlePhoneCall(contact.number, translatedName);
+      });
+      return btn;
+    }
+
+    if (hasEmail) {
+      const link = document.createElement('a');
+      link.className = 'btn-call';
+      link.style.background = contact.color || '#1A56DB';
+      link.href = `mailto:${contact.email}`;
+      link.textContent = window.t('contacts.buttonEmail');
+      link.setAttribute('aria-label', `Email ${translatedName} at ${contact.email}`);
+      return link;
+    }
+
+    if (hasWebsite) {
+      const normalizedWebsite = /^https?:\/\//i.test(contact.website)
+        ? contact.website
+        : `https://${contact.website}`;
+      const link = document.createElement('a');
+      link.className = 'btn-call';
+      link.style.background = contact.color || '#1A56DB';
+      link.href = normalizedWebsite;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = window.t('contacts.buttonVisit');
+      link.setAttribute('aria-label', `Open website for ${translatedName}`);
+      return link;
+    }
+
+    btn.style.background = '#9CA3AF';
+    btn.textContent = 'N/A';
+    btn.disabled = true;
+    btn.setAttribute('aria-label', window.t('contacts.noContactDetailAria', { name: translatedName }));
+    return btn;
+  }
+
+  // ── Render contacts ───────────────────────────────────────────────────────
+  function renderContacts() {
+    const list = document.getElementById('contact-list');
+    list.innerHTML = '';
+
+    CONTACTS.forEach(contact => {
+      const card = document.createElement('div');
+      card.className = 'contact-card';
+
+      const translatedName = resolveDisplayText('contactNames.' + contact.name, contact.name);
+
+      const icon = document.createElement('div');
+      icon.className = 'contact-icon-wrap';
+      icon.style.background = `${contact.color || '#1A56DB'}18`;
+      icon.textContent = contact.icon || '📞';
+
+      const body = document.createElement('div');
+      body.style.flex = '1';
+
+      const name = document.createElement('div');
+      name.className = 'contact-name';
+      name.textContent = translatedName;
+
+      const detail = document.createElement('div');
+      detail.className = 'contact-number contact-detail';
+      detail.textContent = contact.number || contact.email || contact.website || window.t('contacts.noDirectContactDetail');
+
+      body.appendChild(name);
+      body.appendChild(detail);
+
+      card.appendChild(icon);
+      card.appendChild(body);
+      card.appendChild(buildActionButton(contact, translatedName));
+
+      list.appendChild(card);
+    });
+  }
+
+  // ── Map ───────────────────────────────────────────────────────────────────
+  function openMap() {
+    const query = encodeURIComponent(CASE_LOC);
+    window.open('https://www.google.com/maps/search/?api=1&query=' + query, '_blank');
+  }
+
+  function renderPriorityBanner(message) {
+    document.getElementById('banner-loading').style.display = 'none';
+    const textEl = document.getElementById('banner-text');
+    textEl.textContent = (message || '').trim() || window.t('contacts.bannerFallback');
+    textEl.style.display = 'block';
+  }
+
+  async function refreshAiActionsFromBackend(description, location) {
+    if (!description || !description.trim()) {
+      return;
+    }
+
+    try {
+      const language = typeof window.getCurrentLanguage === 'function'
+        ? window.getCurrentLanguage()
+        : 'en';
+      const analyzeResponse = await safeStayAPI.analyzeCase(description, location, language);
+      const analysis = analyzeResponse.analysis || analyzeResponse;
+
+      if (Array.isArray(analysis.recommended_actions) && analysis.recommended_actions.length) {
+        renderRecommendedActions(analysis.recommended_actions, 'ai');
+      }
+      if (Array.isArray(analysis.recommended_contacts) && analysis.recommended_contacts.length) {
+        CONTACTS = analysis.recommended_contacts;
+        renderContacts();
+      }
+      renderPriorityBanner(analysis.priority_message);
+    } catch (e) {
+      renderPriorityBanner('');
+      console.warn('Could not refresh AI actions from backend:', e.message);
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
+    document.getElementById('call-close-btn').addEventListener('click', closeCallModal);
+    document.getElementById('call-copy-btn').addEventListener('click', async () => {
+      const copyBtn = document.getElementById('call-copy-btn');
+      if (!CURRENT_MODAL_PHONE) {
+        showToast(window.t('contacts.noNumberToCopy'));
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(CURRENT_MODAL_PHONE);
+        const oldText = copyBtn.textContent;
+        copyBtn.textContent = window.t('contacts.copied');
+        setTimeout(() => {
+          copyBtn.textContent = oldText;
+        }, 1200);
+      } catch (e) {
+        showToast(window.t('contacts.copyFailed', { phone: CURRENT_MODAL_PHONE }));
+      }
+    });
+
+    document.getElementById('call-modal').addEventListener('click', (event) => {
+      if (event.target.id === 'call-modal') {
+        closeCallModal();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('call-modal');
+        if (modal.classList.contains('open')) {
+          closeCallModal();
+        }
+      }
+    });
+
+    loadAnalysis();
+    renderContacts();
+    renderRecommendedActions(RECOMMENDED_ACTIONS, HAS_AI_ACTIONS ? 'ai' : 'fallback');
+    renderPriorityBanner('');
+
+    const cached = sessionStorage.getItem('safestay_analysis');
+    if (cached) {
+      try {
+        const analysis = JSON.parse(cached);
+        if (Array.isArray(analysis.recommended_actions) && analysis.recommended_actions.length) {
+          renderRecommendedActions(analysis.recommended_actions, 'ai');
+        }
+        renderPriorityBanner(analysis.priority_message);
+      } catch (e) {
+        console.warn('Bad cached analysis while reading actions:', e);
+      }
+    }
+
+    // Try to load live case data from backend
+    try {
+      const response = await safeStayAPI.getCase(CASE_ID);
+      const caseData = response.case || {};
+      const analysisData = response.analysis_data || {};
+      if (Array.isArray(analysisData.recommended_contacts) && analysisData.recommended_contacts.length) {
+        CONTACTS = analysisData.recommended_contacts;
+        renderContacts();
+      }
+
+      if (caseData && Object.keys(caseData).length > 0) {
+        CASE_DESC = caseData.description || CASE_DESC;
+        CASE_LOC = caseData.location || CASE_LOC;
+
+        const detectedCaseValue = caseData.detected_case || CASE_TYPE;
+        const translatedCaseType = resolveDisplayText('caseTypes.' + detectedCaseValue, detectedCaseValue);
+        document.getElementById('case-subtitle').textContent = translatedCaseType + ' · ' + CASE_ID;
+        const urg = (caseData.urgency_level || URGENCY).toUpperCase();
+        document.getElementById('urgency-badge').textContent = urg;
+        document.getElementById('banner-label').textContent =
+          window.t('contacts.bannerLabel', { urgency: caseData.urgency_level || URGENCY });
+
+        if (Array.isArray(analysisData.recommended_actions) && analysisData.recommended_actions.length) {
+          renderRecommendedActions(analysisData.recommended_actions, 'fallback');
+        }
+
+        await refreshAiActionsFromBackend(CASE_DESC, CASE_LOC);
+      }
+    } catch (e) {
+      // Backend unavailable – fall back to static defaults
+      document.getElementById('case-subtitle').textContent = CASE_TYPE + ' · ' + CASE_ID;
+      renderRecommendedActions(RECOMMENDED_ACTIONS, HAS_AI_ACTIONS ? 'ai' : 'fallback');
+      renderPriorityBanner('');
+      console.warn('Could not load case from backend:', e.message);
+    }
+  }
+
+  document.addEventListener('safestay:language-ready', () => {
+    renderContacts();
+    if (HAS_AI_ACTIONS) {
+      renderRecommendedActions(RECOMMENDED_ACTIONS, 'ai');
+    } else {
+      renderRecommendedActions([], 'fallback');
+    }
+    const copyBtn = document.getElementById('call-copy-btn');
+    if (copyBtn && copyBtn.textContent !== window.t('contacts.copied')) {
+      copyBtn.textContent = window.t('contacts.copyNumber');
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
