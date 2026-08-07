@@ -65,6 +65,11 @@ Total failures: 0
 
 The IDs above are transient records produced by that specific test run; future runs intentionally create new records.
 
+Evidence:
+The terminal output below demonstrates that the complete testing workflow finished without failures.
+
+![End-to-End Test Result]({{ '/assets/e2e-test-result.jpg' | relative_url }})
+
 ## 3. What the E2E script does internally
 
 The automated flow uses real HTTP requests and the configured MySQL database rather than mocking the API. It registers a unique user, logs in, captures the JWT, validates that the same protected route returns `401` without the token, analyses a Chinese incident description, creates a case from the analysis result, verifies case retrieval, toggles a real checklist row and reads it again, confirms history inclusion, updates status, retrieves the formal report, and persists a language preference.

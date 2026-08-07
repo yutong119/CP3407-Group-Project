@@ -10,6 +10,84 @@ SafeStay is a web-based support platform designed for international students who
 
 > **Project goal:** reduce the uncertainty between “something happened” and “I know what to do next” by turning a natural-language incident description into an organised case record, recommended next steps, evidence guidance, and relevant contacts.
 
+---
+
+## Project Information
+
+**Course:** CP3407 Software Engineering Project
+
+**Institution:** James Cook University Singapore
+
+**Semester:** TR3 2026
+
+**Project Type:** Group Project - Group 3
+
+**Supervisor:** Dr. Da Sheng Liu
+
+---
+
+## Development Team 3
+
+| Student | Responsibility |
+|---------|----------------|
+| Yutong Ji | Backend Development, AI Integration, Documentation |
+| Sin Nather Paing | Frontend Development, UI Design |
+| Nang Laung Phoung | Database Design, UI Design |
+
+---
+
+## Project Repository
+
+GitHub Repository:
+
+https://github.com/yutong119/CP3407-Group-Project
+
+---
+
+## Repository Structure
+
+The repository is organised into the following major directories.
+
+```text
+CP3407-Group-Project
+│
+├── backend/              Express.js backend server, REST APIs and business logic
+├── frontend/             HTML/CSS/JavaScript web application
+├── database/             Database schema, SQL scripts and data dictionary
+├── docs/                 GitHub Pages project documentation
+├── teacher_demo/         Teacher demonstration package and automated testing (including end to end test)
+│
+├── README.md             Project overview and quick start guide
+├── package.json          Teacher demo scripts
+├── start-demo.sh         One-command local demonstration launcher
+└── .gitignore            Git ignore configuration
+```
+
+### Directory Description
+
+| Directory / File | Description |
+|------------------|-------------|
+| **backend/** | Express.js backend implementing authentication, incident analysis, case management, reporting and REST APIs. |
+| **frontend/** | Multi-page responsive web interface developed using HTML, CSS and JavaScript. |
+| **database/** | MySQL database schema, SQL initialisation script, ERD and data dictionary. |
+| **docs/** | GitHub Pages documentation including Design, Implementation, Testing and Development Tools. |
+| **teacher_demo/** | Demonstration package prepared for assessment, including testing instructions and teacher resources. |
+
+| **README.md** | Main project introduction, setup instructions and repository overview. |
+| **start-demo.sh** | Starts both frontend and backend services for classroom demonstrations. |
+| **package.json** | Provides convenient scripts for teacher demonstrations and automated testing. |
+
+> The repository is organised to clearly separate application code, database resources, documentation and assessment materials, making the project easier to maintain, test and evaluate.
+---
+
+## Documentation
+
+- Design
+- Implementation
+- Testing
+- Development Tools
+
+Use the navigation bar above to browse the project documentation.
 ## Delivered system at a glance
 
 | Area | Delivered implementation |
