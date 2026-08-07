@@ -1,0 +1,9 @@
+title: SafeStay
+description: Student Incident Reporting and Emergency Guidance Platform
+theme: minima
+markdown: kramdown
+header_pages:
+  - design.md
+  - implementation.md
+  - testing.md
+  - tools.md
