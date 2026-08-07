@@ -135,11 +135,9 @@ The shared `responsive.css` enforces a minimum 44px control height, prevents hor
 
 ### 3.4 Interface Prototype
 
-The following image is a temporary visual reference used while preparing the final interface prototype.
+![SafeStay temporary UI design reference]({{ '/assets/ui-prototype.jpg' | relative_url }})
 
-![SafeStay temporary UI design reference]({{ '/assets/ui-prototype-placeholder.jpg' | relative_url }})
-
-The final prototype will be recreated using the required online prototyping tool and will demonstrate the planned navigation and visual structure of the major SafeStay screens.
+The figma link: https://www.figma.com/design/oHbEmKKKctmK3FOGBEdfHZ/CP3407?node-id=0-1&p=f&t=cGbUUYDWs2JyLdD9-0
 
 ## 4. Important design decisions
 
