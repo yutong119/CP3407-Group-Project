@@ -53,40 +53,17 @@ Student browser
 
 This flow is deliberately layered: the frontend never talks directly to MySQL, protected case/evidence/profile actions pass through JWT middleware, and database-backed guidance remains available even when the optional OpenAI path is disabled or unavailable.
 
-### 1.3 UML submission diagram — required final evidence
+### 1.3 UML Component Architecture
 
-The marking rubric requires the architectural design to be produced with an online UML tool such as Gliffy. The repository does **not** contain a Gliffy-exported UML architecture image, so this page does not falsely claim that requirement has already been met.
+The following UML component diagram presents the overall architecture of SafeStay and the relationships between its major software components.
 
-Before submission, create/export a UML component diagram from Gliffy and save it as:
+![SafeStay UML Component Architecture]({{ '/assets/architecture-uml.png' | relative_url }})
 
-`docs/assets/architecture-uml.png`
+The architecture follows a layered structure. The frontend web application communicates with the Express backend through RESTful HTTP requests using JSON. Authentication is managed using JWT and bcrypt, while incident analysis supports both deterministic rule-based processing and optional OpenAI enhancement.
 
-Then replace this note with:
+Backend routes coordinate the main application functions, including authentication, case management, incident analysis, evidence management and reporting. Application services retrieve persistent guidance, checklist templates and authority contact information from the MySQL database.
 
-```markdown
-![SafeStay UML component architecture]({{ '/assets/architecture-uml.png' | relative_url }})
-```
-
-Use these exact components in the diagram so it matches the current code:
-
-- **Browser / Presentation**: Home, Login/Register, Describe, Result, History, Case Details, Evidence, Contacts, Profile, Language
-- **Frontend Services**: `api.js`, `i18n.js`, locale JSON files
-- **Express API**: Auth Routes, User Routes, Case Routes, Evidence Routes, Category Routes, Analyze Route
-- **Middleware**: JWT Authentication, CORS, body parsing, static uploads
-- **Services**: Analysis Service, Template Service, Checklist Service
-- **Data/External**: MySQL Database, Evidence File Storage, OpenAI API (optional)
-
-Recommended relationships/arrows:
-
-- Browser pages → Frontend API Client
-- Frontend API Client → Express API
-- Protected routes → JWT Authentication
-- Routes → Services
-- Routes/Services → MySQL
-- Evidence Route → Evidence File Storage
-- Analyze Route → Analysis Service
-- Analysis Service → OpenAI API (optional)
-- Analyze Route/Case Route → Template Service → MySQL
+This separation keeps presentation, application logic and persistent data independent, making the system easier to maintain, test and extend.
 
 ## 2. Database design
 
@@ -156,17 +133,13 @@ The shared `responsive.css` enforces a minimum 44px control height, prevents hor
 
 `i18n.js` reads a stored language code, loads English as the fallback locale, loads the selected locale, and applies text/placeholder/title/ARIA translations using `data-i18n*` attributes. This keeps page layout separate from translated strings and provides a predictable English fallback when a translation key cannot be loaded.
 
-### 3.4 Prototype-tool evidence — required final evidence
+### 3.4 Interface Prototype
 
-The marking rubric also asks for interface design from an online prototyping tool (for example NinjaMock). The ZIP contains the implemented UI but no exported prototype/wireframe artifact. Add the actual prototype link/export your team used; do not invent one.
+The following image is a temporary visual reference used while preparing the final interface prototype.
 
-Recommended placement after export:
+![SafeStay temporary UI design reference]({{ '/assets/ui-prototype-placeholder.jpg' | relative_url }})
 
-```markdown
-![SafeStay interface prototype]({{ '/assets/interface-prototype.png' | relative_url }})
-```
-
-For the strongest comparison, show at least the planned **Home**, **Describe**, **Result** and **Case Details** screens next to final implementation screenshots and briefly explain what changed after iteration feedback.
+The final prototype will be recreated using the required online prototyping tool and will demonstrate the planned navigation and visual structure of the major SafeStay screens.
 
 ## 4. Important design decisions
 

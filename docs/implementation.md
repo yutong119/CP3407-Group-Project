@@ -120,32 +120,14 @@ The final `main` history contains **105 commits**. The repository shows separate
 
 This branching history provides traceability from feature work to integration fixes and final acceptance testing. Commit messages also show targeted fixes such as `correct case details page navigation from history`, `Fix checklist persistence and history progress display`, and `Normalize OpenAI probability output` rather than only large undifferentiated commits.
 
-## 9. Demonstration evidence to add before final submission
+## 9. User Feedback and Iterative Improvement
 
-The code repository contains the runnable teacher demo package and test guide, but it does not contain final UI screenshots or written client-feedback records. To meet the marking rubric without inventing evidence, add the real artifacts your team actually produced.
+SafeStay was refined through repeated demonstration and user testing after each major iteration. Feedback was used to identify missing use cases, usability problems, and opportunities to make the final workflow more practical and complete.
 
-Recommended screenshot set:
-
-| Screenshot | What it should prove |
-| --- | --- |
-| Home | Final responsive landing experience and emergency entry point |
-| Describe | Natural-language incident input, evidence and location |
-| Result | Detected category, urgency, confidence and recommended actions |
-| Evidence | Category-specific checklist and saved completion state |
-| Contacts | Relevant authority contacts and action buttons |
-| History + Case Details | Persisted case lifecycle and navigation |
-| Language | Four-language selection/persistence |
-| Formal Report/PDF | Structured report generated from case data |
-| E2E terminal | Final PASS output with `Total failures: 0` |
-
-### Client feedback
-
-**Action required:** insert the actual client/lecturer feedback received after each iteration and state the concrete change made in response. The ZIP does not contain those feedback records, so this page deliberately does not fabricate them.
-
-A concise evidence table can use this format:
-
-| Iteration | Feedback received | Change implemented | Commit / screenshot evidence |
+| Iteration | Feedback received / issue identified | Change implemented in response | Evidence |
 | --- | --- | --- | --- |
-| 1 | _Add actual feedback_ | _Add actual response_ | _Commit / image_ |
-| 2 | _Add actual feedback_ | _Add actual response_ | _Commit / image_ |
-| 3 | _Add actual feedback_ | _Add actual response_ | _Commit / image_ |
+| Iteration 1 | At the end of Iteration 1, SafeStay only supported three incident categories: Theft, Lost Passport, and Rental Dispute. During user testing, users entered other incident types that could not be matched to an appropriate case category. | The supported case categories were expanded from three to six so that a wider range of student incidents could be handled. The final system supports Theft, Lost Passport, Scam / Online Fraud, Rental Dispute, Medical Emergency, and Other Issues. | Updated `case_categories` data, incident-analysis logic, and final six-category workflow |
+| Iteration 2 | After the main workflow was largely completed, testing revealed that users could not reliably open Case Details from Case History. Users also suggested that completed items in the Evidence Checklist should be stored so that they could revisit a case and view or update their progress later. | The Case History → Case Details navigation was corrected. Checklist completion was changed from temporary UI state to persistent per-case data stored in the database, allowing users to reopen a case and retain or update checklist progress. | Case Details navigation fix; persistent `checklist_items`; commit `f1d16dd` (`Fix checklist persistence and history progress display`) |
+| Iteration 3 | After Iteration 3, the team tested the complete end-to-end workflow and identified opportunities to improve the completeness and practical usability of the system. In particular, users needed more direct actions when contacting support services and a reusable record of their incident. | Device-aware contact behaviour was added so mobile users could directly initiate phone calls. Formal report generation was also implemented, together with report copying and PDF download functionality, allowing users to save or reuse incident information when communicating with relevant authorities or support services. | Device-aware calling; formal report generation; copy and PDF download functions; final end-to-end workflow testing |
+
+These changes demonstrate an iterative feedback loop in which each delivered version was tested, issues were identified, and the following iteration incorporated practical improvements based on user experience.
